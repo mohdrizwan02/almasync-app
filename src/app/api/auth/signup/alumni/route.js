@@ -80,7 +80,7 @@ export async function POST(request) {
         message: "alumni profile has been created successfully",
       },
       {
-        status: 200,
+        status: 201,
       }
     );
   } catch (error) {

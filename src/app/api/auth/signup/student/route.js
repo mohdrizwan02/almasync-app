@@ -87,11 +87,11 @@ export async function POST(request, response) {
       return NextResponse.json(
         {
           message:
-            "student profile has been created successfully but failed to send email please manually verfify your email after login",
+            "student profile has been created successfully but failed to send email please manually verify your email after login",
         },
 
         {
-          status: 201,
+          status: 202,
         }
       );
     }
