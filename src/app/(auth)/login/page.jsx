@@ -1,12 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Label } from "@/components/ui/label";
 
 import {
   Form,
@@ -18,11 +21,27 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Input } from "@/components/ui/input";
 import { loginSchema } from "@/schemas/login.schema";
+import axios from "axios";
 
 const LoginPage = () => {
-  const form = useForm({
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+
+  const studentForm = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
+
+  const alumniForm = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -30,8 +49,46 @@ const LoginPage = () => {
     },
   });
 
-  function onSubmit(values) {
+  function handleStudentLogin(values) {
+    setLoading((prev) => true);
     console.log(values);
+
+    axios
+      .post("/api/auth/login", values)
+      .then((response) => {
+        console.log(response);
+        console.log(response.data.success);
+        if (response.data.success) {
+          router.push("/");
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+        if (!error.response.data.success) {
+          console.log(error.response.data.error);
+        }
+      });
+  }
+
+  function handleAlumniLogin(values) {
+    setLoading((prev) => true);
+    console.log(values);
+
+    axios
+      .post("/api/auth/login", values)
+      .then((response) => {
+        console.log(response);
+        console.log(response.data.success);
+        if (response.data.success) {
+          router.push("/");
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+        if (!error.response.data.success) {
+          console.log(error.response.data.error);
+        }
+      });
   }
 
   return (
@@ -44,7 +101,7 @@ const LoginPage = () => {
                 <img src="/almasync.png" className="h-16" alt="logo image" />
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto">
+            <div className="bg-white rounded-xl shadow-lg  max-w-4xl mx-auto">
               <div className="flex flex-col md:flex-row">
                 <div className="hidden md:block md:w-5/12 bg-orange-500 relative overflow-hidden">
                   <div
@@ -133,7 +190,13 @@ const LoginPage = () => {
                 </div>
                 <div className="w-full md:w-7/12 bg-white flex flex-col">
                   <div className="p-6 md:p-8 flex-grow flex flex-col justify-center">
-                    <div className="max-w-md px-2 mx-auto w-full">
+                    <div
+                      className="overflow-y-auto px-2 max-h-[70vh] space-y-6 pr-4"
+                      style={{
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "hsl(24.6, 95%, 53.1%)  transparent",
+                      }}
+                    >
                       <div className="mb-8">
                         <div className="flex items-start space-x-2">
                           <h2 className="text-2xl font-bold text-gray-900 mb-1">
@@ -160,74 +223,196 @@ const LoginPage = () => {
                           </div>
                         </div>
                       </div>
-                      <Form {...form}>
-                        <form
-                          onSubmit={form.handleSubmit(onSubmit)}
-                          className="space-y-5"
-                        >
-                          <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="email"
-                                    placeholder=""
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="password"
-                                    placeholder=""
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox id="terms" />
-                            <label
-                              htmlFor="terms"
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      <Tabs defaultValue="student">
+                        <TabsList className={"w-full"}>
+                          <TabsTrigger value="student">Student</TabsTrigger>
+                          <TabsTrigger value="alumni">Alumni</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="student">
+                          <Form {...studentForm}>
+                            <form
+                              className="space-y-5 mt-2"
+                              onSubmit={studentForm.handleSubmit(
+                                handleStudentLogin
+                              )}
                             >
-                              Remember me
-                            </label>
-                          </div>
+                              <div className="flex justify-center">
+                                <div className="">
+                                  <Label
+                                    className={
+                                      "text-2xl w-full font-serif text-center "
+                                    }
+                                  >
+                                    Student Login
+                                  </Label>
+                                </div>
+                              </div>
+                              <FormField
+                                control={studentForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="email"
+                                        placeholder=""
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={studentForm.control}
+                                name="password"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Password</FormLabel>
 
-                          <Button variant="link">forgot password</Button>
-                        </div>
-                        <div className="flex justify-center">
-                          <Button className="">Sign in</Button>
-                        </div>
-                        </form>
-                      </Form>
+                                    <FormControl>
+                                      <Input
+                                        type="password"
+                                        placeholder=""
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={studentForm.control}
+                                name="rememberMe"
+                                render={({ field }) => (
+                                  <FormItem className={"flex "}>
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+
+                                    <FormLabel>Remember me</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="flex justify-between">
+                                <Button type="submit" className="">
+                                  Sign in
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="link"
+                                  onClick={() => router.push("forgot-password")}
+                                >
+                                  forgot password
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </TabsContent>
+                        <TabsContent value="alumni">
+                          <Form {...alumniForm}>
+                            <form
+                              className="space-y-5 mt-2"
+                              onSubmit={alumniForm.handleSubmit(
+                                handleAlumniLogin
+                              )}
+                            >
+                              <div className="flex justify-center">
+                                <div className="">
+                                  <Label
+                                    className={
+                                      "text-2xl w-full font-serif text-center "
+                                    }
+                                  >
+                                    Alumni Login
+                                  </Label>
+                                </div>
+                              </div>
+                              <FormField
+                                control={alumniForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="email"
+                                        placeholder=""
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={alumniForm.control}
+                                name="password"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Password</FormLabel>
+
+                                    <FormControl>
+                                      <Input
+                                        type="password"
+                                        placeholder=""
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={studentForm.control}
+                                name="rememberMe"
+                                render={({ field }) => (
+                                  <FormItem className={"flex "}>
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+
+                                    <FormLabel>Remember me</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="flex justify-between">
+                                <Button type="submit" className="">
+                                  Sign in
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="link"
+                                  onClick={() => router.push("forgot-password")}
+                                >
+                                  forgot password
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </TabsContent>
+                      </Tabs>
 
                       <div className="space-y-6">
-                       
-
                         <div className="flex flex-col items-center justify-center space-y-2">
                           <div className="text-sm">
                             <span className="text-gray-600">
                               New to Alma-Sync ?
                             </span>{" "}
-                            <Button variant="link">Register</Button>
+                            <Button
+                              type="button"
+                              variant="link"
+                              onClick={() => router.push("/signup")}
+                            >
+                              Register
+                            </Button>
                           </div>
                         </div>
                       </div>

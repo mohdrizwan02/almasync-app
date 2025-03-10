@@ -10,6 +10,8 @@ import { useForm } from "react-hook-form";
 import { signupSchema } from "@/schemas/signup.schema";
 import { cn } from "@/lib/utils";
 
+import { useRouter } from "next/navigation";
+
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
@@ -33,6 +35,8 @@ import {
 import axios from "axios";
 
 const SignupPage = () => {
+
+  const router = useRouter()
   const [colleges, setColleges] = useState();
   const [pageLoad, setPageLoad] = useState(true);
 
@@ -625,7 +629,7 @@ const SignupPage = () => {
                               <span className="text-gray-600">
                                 Already have an account?
                               </span>{" "}
-                              <Button variant="link">Login</Button>
+                              <Button variant="link" onClick={()=>router.push("/login")}>Login</Button>
                             </div>
                           </div>
                         </div>

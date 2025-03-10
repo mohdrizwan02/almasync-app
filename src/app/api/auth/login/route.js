@@ -18,6 +18,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         error: "user not found invalid email address",
+        success:false
       },
       {
         status: 404,
@@ -31,6 +32,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         error: "unauthorized request incorrect password",
+        success:false
       },
       {
         status: 401,
@@ -70,11 +72,13 @@ export async function POST(request) {
     secure: true,
   });
 
-  response.cookies.set("role", userData.role, {
+
+  response.cookies.set("userRole", userData.role, {
     httpOnly: true,
     expires: cookieExpiry,
     secure: true,
   });
+
 
   return response;
 }
