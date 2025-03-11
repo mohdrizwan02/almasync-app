@@ -1,12 +1,14 @@
+import { Resend } from "resend";
 import VerificationEmail from "../../emails/VerificationEmail";
 
-import { resend } from "@/lib/resend";
-
 export async function sendVerificationEmail(email, otp) {
+  const resend = new Resend(
+    process.env.RESEND_API_KEY || "re_aP8nJNWv_Jpxx5NKVkEavAVeFnPzHXyVh"
+  );
   try {
     const { data, error } = await resend.emails.send({
       from: "AlmaSync-App <onboarding@resend.dev>",
-      to: email,
+      to: "almasyncapp@gmail.com",
       subject: "signup Message Verification Code",
       react: VerificationEmail({ otp }),
     });
@@ -18,7 +20,6 @@ export async function sendVerificationEmail(email, otp) {
       };
     }
     if (error) {
-      console.error("Error sending verification email:",error);
       return {
         success: false,
         message: "error sending Verification email",

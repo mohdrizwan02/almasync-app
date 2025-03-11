@@ -12,7 +12,10 @@ export async function POST(request) {
   const { email, password } = reqBody;
 
   try {
-    const existedAdmin = await Admin.find({ email: email });
+    const adminData = await Admin.find({ email: email });
+
+    const existedAdmin = adminData[0];
+
     if (existedAdmin) {
       throw new Error("admin already exists with this email");
     }
