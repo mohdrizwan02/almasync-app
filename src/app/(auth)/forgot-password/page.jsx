@@ -8,14 +8,14 @@ import { forgotPasswordSchema } from "@/schemas/forgot-password.schema";
 
 import { useForm } from "react-hook-form";
 
-import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
-
 import React from "react";
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import { toast } from "sonner";
+
+import { Label } from "@/components/ui/label";
 
 import {
   InputOTP,
@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import axios from "axios";
 
 const ForgotPasswordPage = () => {
@@ -68,8 +68,6 @@ const ForgotPasswordPage = () => {
     return () => clearInterval(interval);
   }, [disabled]);
 
-  const [error, setError] = useState("");
-
   const [isEmailSent, setIsEmailSent] = useState(false);
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -79,6 +77,10 @@ const ForgotPasswordPage = () => {
   const [emailVerifyLoading, setEmailVerifyLoading] = useState(false);
 
   const [emailResendLoading, setEmailResendLoading] = useState(false);
+
+  const [password, setPassword] = useState("");
+
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const forgotPasswordForm = useForm({
     resolver: zodResolver(forgotPasswordSchema),
@@ -102,6 +104,7 @@ const ForgotPasswordPage = () => {
       })
       .then((response) => {
         if (response.data.success) {
+          toast.success(response.data.message);
           console.log(response.data.success);
           setIsEmailSent((prev) => true);
           setFirstTimeEmailSent((prev) => true);
@@ -109,6 +112,7 @@ const ForgotPasswordPage = () => {
         }
       })
       .catch((error) => {
+        toast.error(error.response.data.error);
         console.log(error.response.data.success);
         console.log(error.response.data.error);
         setIsEmailSent((prev) => false);
@@ -133,12 +137,14 @@ const ForgotPasswordPage = () => {
       })
       .then((response) => {
         if (response.data.success) {
+          toast.success(response.data.message);
           console.log(response.data.success);
           setIsEmailSent((prev) => true);
           setEmailResendLoading((prev) => false);
         }
       })
       .catch((error) => {
+        toast.error(error.response.data.error);
         console.log(error.response.data.success);
         console.log(error.response.data.error);
         setIsEmailSent((prev) => false);
@@ -155,16 +161,39 @@ const ForgotPasswordPage = () => {
       .then((response) => {
         console.log(response);
         if (response.data.success) {
+          toast.success(response.data.message);
           setEmailVerifyLoading((prev) => false);
           setIsEmailVerified(true);
         }
       })
       .catch((error) => {
+        toast.error(error.response.data.error);
         console.log(error);
         console.log(error.response.data.success);
         console.log(error.response.data.error);
         setEmailVerifyLoading((prev) => false);
       });
+  };
+
+  const handleChangePassword = (e) => {
+    e.preventDefault();
+    console.log(password);
+    console.log(confirmPassword);
+    console.log(email);
+    if (!password || !confirmPassword) {
+      toast.error("password or confirm password should not be empty");
+      return;
+    }
+
+    if (password.length < 6 || confirmPassword.length < 6) {
+      toast.error("password and confirm password should be minimum of 6 characters")
+      return
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("password and confirm password should be same");
+      return;
+    }
   };
 
   return (
@@ -177,7 +206,8 @@ const ForgotPasswordPage = () => {
                 <>
                   <CardTitle className="text-2xl">Reset Password</CardTitle>
                   <CardDescription>
-                    enter your desired password to reset it
+                    Set the new password to your account to get your login
+                    access
                   </CardDescription>
                 </>
               ) : (
@@ -195,7 +225,35 @@ const ForgotPasswordPage = () => {
             <CardContent>
               <div className="flex flex-col gap-6">
                 {isEmailVerified ? (
-                  <></>
+                  <>
+                    <div className="space-y-5 mt-2">
+                      <div className="space-y-3">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          type="password"
+                          id="password"
+                          value={password}
+                          onChange={(e) =>
+                            setPassword((prev) => e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <Label htmlFor="password">Confirm Password</Label>
+                        <Input
+                          type="password"
+                          id="confirmPassword"
+                          value={confirmPassword}
+                          onChange={(e) =>
+                            setConfirmPassword((prev) => e.target.value)
+                          }
+                        />
+                      </div>
+                      <Button type="button" onClick={handleChangePassword}>
+                        submit
+                      </Button>
+                    </div>
+                  </>
                 ) : (
                   <Form {...forgotPasswordForm}>
                     <form
