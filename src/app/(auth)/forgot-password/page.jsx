@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { LoaderCircle } from "lucide-react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,6 +53,8 @@ const ForgotPasswordPage = () => {
 
   const [firstTimeEmailSent, setFirstTimeEmailSent] = useState(false);
 
+  const router = useRouter();
+
   useEffect(() => {
     let interval;
     if (disabled) {
@@ -78,6 +82,8 @@ const ForgotPasswordPage = () => {
 
   const [emailResendLoading, setEmailResendLoading] = useState(false);
 
+  const [passwordVerifyLoading, setPasswordVerifyLoading] = useState(false);
+
   const [password, setPassword] = useState("");
 
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -103,6 +109,7 @@ const ForgotPasswordPage = () => {
         verifyOtp: "123456",
       })
       .then((response) => {
+        console.log(response);
         if (response.data.success) {
           toast.success(response.data.message);
           console.log(response.data.success);
@@ -112,6 +119,7 @@ const ForgotPasswordPage = () => {
         }
       })
       .catch((error) => {
+        console.log(error);
         toast.error(error.response.data.error);
         console.log(error.response.data.success);
         console.log(error.response.data.error);
@@ -136,6 +144,7 @@ const ForgotPasswordPage = () => {
         verifyOtp: "123456",
       })
       .then((response) => {
+        console.log(response);
         if (response.data.success) {
           toast.success(response.data.message);
           console.log(response.data.success);
@@ -144,6 +153,7 @@ const ForgotPasswordPage = () => {
         }
       })
       .catch((error) => {
+        console.log(error);
         toast.error(error.response.data.error);
         console.log(error.response.data.success);
         console.log(error.response.data.error);
@@ -167,8 +177,8 @@ const ForgotPasswordPage = () => {
         }
       })
       .catch((error) => {
-        toast.error(error.response.data.error);
         console.log(error);
+        toast.error(error.response.data.error);
         console.log(error.response.data.success);
         console.log(error.response.data.error);
         setEmailVerifyLoading((prev) => false);
@@ -177,23 +187,53 @@ const ForgotPasswordPage = () => {
 
   const handleChangePassword = (e) => {
     e.preventDefault();
+    setPasswordVerifyLoading((prev) => true);
     console.log(password);
     console.log(confirmPassword);
     console.log(email);
     if (!password || !confirmPassword) {
       toast.error("password or confirm password should not be empty");
+      setPasswordVerifyLoading((prev) => false);
       return;
     }
 
     if (password.length < 6 || confirmPassword.length < 6) {
-      toast.error("password and confirm password should be minimum of 6 characters")
-      return
+      toast.error(
+        "password and confirm password should be minimum of 6 characters"
+      );
+      setPasswordVerifyLoading((prev) => false);
+
+      return;
     }
 
     if (password !== confirmPassword) {
       toast.error("password and confirm password should be same");
+      setPasswordVerifyLoading((prev) => false);
+
       return;
     }
+
+    axios
+      .post("/api/auth/reset-password", {
+        email,
+        password,
+      })
+      .then((response) => {
+        console.log(response)
+        if (response.data.success) {
+          console.log("password has been changed successfully you can login");
+          toast.success(response.data.message);
+          setPasswordVerifyLoading((prev) => false);
+
+          router.push("/login");
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+        console.log(error.response.data.error);
+        toast.error(error.response.data.error);
+        setPasswordVerifyLoading((prev) => false);
+      });
   };
 
   return (
@@ -250,7 +290,11 @@ const ForgotPasswordPage = () => {
                         />
                       </div>
                       <Button type="button" onClick={handleChangePassword}>
-                        submit
+                        {passwordVerifyLoading ? (
+                          <LoaderCircle className="animate-spin" />
+                        ) : (
+                          "submit"
+                        )}
                       </Button>
                     </div>
                   </>
@@ -262,7 +306,7 @@ const ForgotPasswordPage = () => {
                         handleOtpVerificaition
                       )}
                     >
-                      <FormField
+                      {!firstTimeEmailSent &&(<FormField
                         control={forgotPasswordForm.control}
                         name="email"
                         render={({ field }) => (
@@ -274,7 +318,7 @@ const ForgotPasswordPage = () => {
                             <FormMessage />
                           </FormItem>
                         )}
-                      />
+                      />)}
 
                       {isEmailSent && (
                         <>

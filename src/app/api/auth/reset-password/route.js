@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-
-
 import bcryptjs from "bcryptjs";
 
 import User from "@/models/user.model";
@@ -14,14 +12,17 @@ export async function POST(request) {
 
   const { email, password } = reqBody;
 
-  console.log.log(password);
+  console.log(password);
 
   const hashedPassword = await bcryptjs.hash(password, 10);
 
-  const user = User.findOneAndUpdate(
+  const user = await User.findOneAndUpdate(
     { email: email },
     { password: hashedPassword }
   );
+
+  console.log(user)
+  console.log(hashedPassword)
 
   if (!user) {
     throw new Error("error updating the user password");

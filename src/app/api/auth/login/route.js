@@ -12,6 +12,8 @@ export async function POST(request) {
 
   const { email, password } = reqBody;
 
+  console.log(password)
+
   const user = await User.findOne({ email });
 
   if (!user) {
