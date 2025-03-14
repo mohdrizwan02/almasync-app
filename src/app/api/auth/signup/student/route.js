@@ -12,7 +12,6 @@ export async function POST(request, response) {
   try {
     const reqBody = await request.json();
     const {
-      role,
       email,
       firstName,
       lastName,
@@ -45,7 +44,7 @@ export async function POST(request, response) {
     const user = await User.create({
       email,
       password: hashedPassword,
-      role,
+      role: "student",
       firstName,
       lastName,
     });
@@ -75,13 +74,6 @@ export async function POST(request, response) {
 
       throw new Error("error occurred while making student profile! try again");
     }
-
-    let otp = 123456;
-
-    const emailResponse = await sendVerificationEmail(
-      "almasyncapp@gmail.com",
-      otp
-    );
 
     if (!emailResponse.success) {
       return NextResponse.json(

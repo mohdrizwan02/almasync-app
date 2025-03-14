@@ -10,7 +10,7 @@ export async function POST(request) {
   try {
     const reqBody = await request.json();
     const {
-      role,
+      
       email,
       firstName,
       lastName,
@@ -43,7 +43,7 @@ export async function POST(request) {
     const user = await User.create({
       email,
       password: hashedPassword,
-      role,
+      role:"alumni",
       firstName,
       lastName,
     });

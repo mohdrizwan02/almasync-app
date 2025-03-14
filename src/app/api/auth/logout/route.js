@@ -1,9 +1,4 @@
-import dbConnect from "@/lib/dbConnect";
-import bcrypt from "bcryptjs";
-import User from "@/models/user.model";
 import { NextResponse } from "next/server";
-import AlumniProfile from "@/models/alumniProfile.model";
-import jwt from "jsonwebtoken";
 
 export async function GET(request) {
   try {
@@ -23,11 +18,10 @@ export async function GET(request) {
       secure: true,
     });
     response.cookies.set("role", "", {
-        httpOnly: true,
-        expires: new Date(),
-        secure: true,
-      });
-
+      httpOnly: true,
+      expires: new Date(),
+      secure: true,
+    });
 
     return response;
   } catch (error) {

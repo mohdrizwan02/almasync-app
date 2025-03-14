@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useState } from "react";
-import Image from "next/image";
+
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -35,8 +35,8 @@ import {
 import axios from "axios";
 
 const SignupPage = () => {
-
-  const router = useRouter()
+  const router = useRouter();
+  const currentYear = new Date().getFullYear();
   const [colleges, setColleges] = useState();
   const [pageLoad, setPageLoad] = useState(true);
 
@@ -87,11 +87,55 @@ const SignupPage = () => {
     },
   });
 
+  const passoutYear = form.watch("passoutYear");
+  const admissionYear = form.watch("admissionYear");
+
   const collegeName = form.watch("college");
   const degreeName = form.watch("degree");
 
-  function onSubmit(values) {
+  function handleRegister(values) {
     console.log(values);
+    const numberPassoutYear = Number(passoutYear);
+    const numberAdmissionYear = Number(admissionYear);
+
+    if (numberAdmissionYear > numberPassoutYear) {
+      form.setError("passoutYear", {
+        type: "manual",
+        message: "Invalid passout year",
+      });
+      return;
+    }
+
+    let role;
+    if (passoutYear >= currentYear) {
+      role = "student";
+    } else {
+      role = "alumni";
+    }
+
+    console.log(role);
+
+    if (role === "student") {
+      console.log("creating profile for student");
+      axios
+        .post("/api/auth/signup/student", values)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      console.log("creating profile for alumni");
+      axios
+        .post("/api/auth/signup/alumni", values)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   }
 
   return (
@@ -232,7 +276,7 @@ const SignupPage = () => {
                         </div>
                         <Form {...form}>
                           <form
-                            onSubmit={form.handleSubmit(onSubmit)}
+                            onSubmit={form.handleSubmit(handleRegister)}
                             className="space-y-5"
                           >
                             <div className="grid grid-cols-2 gap-4">
@@ -606,21 +650,9 @@ const SignupPage = () => {
                               )}
                             />
 
-                            <div className="flex justify-between">
-                              <Button
-                                variant="destructive"
-                                onClick={() => {
-                                  form.reset();
-                                  form.clearErrors();
-                                  form.clearErrors();
-                                  
-                                }}
-                                type="button"
-                              >
-                                Reset
-                              </Button>
-                              <Button type="submit">Submit</Button>
-                            </div>
+                            <Button type="submit" className={"w-full h-10"}>
+                              Submit
+                            </Button>
                           </form>
                         </Form>
                         <div className="space-y-6">
@@ -629,7 +661,12 @@ const SignupPage = () => {
                               <span className="text-gray-600">
                                 Already have an account?
                               </span>{" "}
-                              <Button variant="link" onClick={()=>router.push("/login")}>Login</Button>
+                              <Button
+                                variant="link"
+                                onClick={() => router.push("/login")}
+                              >
+                                Login
+                              </Button>
                             </div>
                           </div>
                         </div>

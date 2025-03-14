@@ -289,7 +289,7 @@ const ForgotPasswordPage = () => {
                           }
                         />
                       </div>
-                      <Button type="button" onClick={handleChangePassword}>
+                      <Button type="button" className="w-20" onClick={handleChangePassword}>
                         {passwordVerifyLoading ? (
                           <LoaderCircle className="animate-spin" />
                         ) : (
@@ -360,6 +360,7 @@ const ForgotPasswordPage = () => {
                             type="button"
                             onClick={handleResendVerificationCode}
                             disabled={disabled}
+                            className="w-25"
                           >
                             {emailResendLoading ? (
                               <LoaderCircle className="animate-spin" />
@@ -372,7 +373,7 @@ const ForgotPasswordPage = () => {
                         )}
                         {isEmailSent ? (
                           <>
-                            <Button type="submit">
+                            <Button type="submit" className="w-20">
                               {emailVerifyLoading ? (
                                 <LoaderCircle className="animate-spin" />
                               ) : (
@@ -385,6 +386,7 @@ const ForgotPasswordPage = () => {
                             <Button
                               type="button"
                               onClick={handleSendVerificationCode}
+                              className={"w-20"}
                             >
                               {emailSendLoading ? (
                                 <LoaderCircle className="animate-spin" />

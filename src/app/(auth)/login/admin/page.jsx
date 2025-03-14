@@ -45,12 +45,14 @@ const AdminLoginPage = () => {
   const handleLogin = (values) => {
     console.log(values);
 
-    axios.post("/api/auth/login",values).then((response)=>{
-      console.log(response)
-    }).catch((error)=>{
-      console.log(error)
-    })
-
+    axios
+      .post("/api/auth/login", values)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const router = useRouter();
@@ -109,24 +111,9 @@ const AdminLoginPage = () => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={adminForm.control}
-                      name="rememberMe"
-                      render={({ field }) => (
-                        <FormItem className={"flex "}>
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
 
-                          <FormLabel>Remember me</FormLabel>
-                        </FormItem>
-                      )}
-                    />
                     <div className="flex justify-center">
-                      <Button type="submit" className="">
+                      <Button type="submit" className="w-20">
                         Sign in
                       </Button>
                     </div>

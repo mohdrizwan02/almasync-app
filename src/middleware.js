@@ -13,7 +13,12 @@ export async function middleware(request) {
 
   const path = request.nextUrl.pathname;
 
-  const isPublicPath = path === "/login" || path === "/signup" || path ==="/login/admin" || path === "/";
+  const isPublicPath =
+    path === "/login" ||
+    path === "/signup" ||
+    path === "/login/admin" ||
+    path === "/" ||
+    path === "/forgot-password";
 
   if (token) {
     if (isPublicPath) {
@@ -44,5 +49,6 @@ export const config = {
     "/admin/:path*",
     "/student/:path*",
     "/alumni/:path*",
+    "/forgot-password",
   ],
 };

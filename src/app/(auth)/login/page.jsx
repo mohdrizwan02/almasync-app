@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
   Form,
@@ -21,18 +21,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Input } from "@/components/ui/input";
 import { loginSchema } from "@/schemas/login.schema";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
 
 const LoginPage = () => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
 
-  const studentForm = useForm({
+  const userForm = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -41,15 +40,7 @@ const LoginPage = () => {
     },
   });
 
-  const alumniForm = useForm({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  function handleStudentLogin(values) {
+  function handleUserLogin(values) {
     setLoading((prev) => true);
     console.log(values);
 
@@ -63,30 +54,10 @@ const LoginPage = () => {
         }
       })
       .catch((error) => {
+        setLoading((prev) => false);
         console.log(error.response.data);
         if (!error.response.data.success) {
-          console.log(error.response.data.error);
-        }
-      });
-  }
-
-  function handleAlumniLogin(values) {
-    setLoading((prev) => true);
-    console.log(values);
-
-    axios
-      .post("/api/auth/login", values)
-      .then((response) => {
-        console.log(response);
-        console.log(response.data.success);
-        if (response.data.success) {
-          router.push("/");
-        }
-      })
-      .catch((error) => {
-        console.log(error.response.data);
-        if (!error.response.data.success) {
-          console.log(error.response.data.error);
+          toast.error(error.response.data.error);
         }
       });
   }
@@ -102,7 +73,7 @@ const LoginPage = () => {
               </div>
             </div>
             <div className="bg-white rounded-xl shadow-lg  max-w-4xl mx-auto">
-              <div className="flex flex-col md:flex-row">
+              <div className="flex flex-col md:flex-row min-h-[600px]">
                 <div className="hidden md:block md:w-5/12 bg-orange-500 relative overflow-hidden">
                   <div
                     className="absolute inset-0 z-0 opacity-10"
@@ -190,13 +161,7 @@ const LoginPage = () => {
                 </div>
                 <div className="w-full md:w-7/12 bg-white flex flex-col">
                   <div className="p-6 md:p-8 flex-grow flex flex-col justify-center">
-                    <div
-                      className="overflow-y-auto px-2 max-h-[70vh] space-y-6 pr-4"
-                      style={{
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "hsl(24.6, 95%, 53.1%)  transparent",
-                      }}
-                    >
+                    <div className="max-w-md mx-auto w-full">
                       <div className="mb-8">
                         <div className="flex items-start space-x-2">
                           <h2 className="text-2xl font-bold text-gray-900 mb-1">
@@ -223,197 +188,97 @@ const LoginPage = () => {
                           </div>
                         </div>
                       </div>
-                      <Tabs defaultValue="student">
-                        <TabsList className={"w-full"}>
-                          <TabsTrigger value="student">Student</TabsTrigger>
-                          <TabsTrigger value="alumni">Alumni</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="student">
-                          <Form {...studentForm}>
-                            <form
-                              className="space-y-5 mt-2"
-                              onSubmit={studentForm.handleSubmit(
-                                handleStudentLogin
+                      <div className="space-y-3">
+                        <Form {...userForm}>
+                          <form
+                            className="space-y-5 mt-2"
+                            onSubmit={userForm.handleSubmit(handleUserLogin)}
+                          >
+                            <FormField
+                              control={userForm.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="email"
+                                      placeholder=""
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
                               )}
-                            >
-                              <div className="flex justify-center">
-                                <div className="">
-                                  <Label
-                                    className={
-                                      "text-2xl w-full font-serif text-center "
-                                    }
-                                  >
-                                    Student Login
-                                  </Label>
-                                </div>
-                              </div>
-                              <FormField
-                                control={studentForm.control}
-                                name="email"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        type="email"
-                                        placeholder=""
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={studentForm.control}
-                                name="password"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                            />
+                            <FormField
+                              control={userForm.control}
+                              name="password"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Password</FormLabel>
 
-                                    <FormControl>
-                                      <Input
-                                        type="password"
-                                        placeholder=""
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={studentForm.control}
-                                name="rememberMe"
-                                render={({ field }) => (
-                                  <FormItem className={"flex "}>
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                      />
-                                    </FormControl>
-
-                                    <FormLabel>Remember me</FormLabel>
-                                  </FormItem>
-                                )}
-                              />
-                              <div className="flex justify-between">
-                                <Button type="submit" className="">
-                                  Sign in
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="link"
-                                  onClick={() => router.push("forgot-password")}
-                                >
-                                  forgot password
-                                </Button>
-                              </div>
-                            </form>
-                          </Form>
-                        </TabsContent>
-                        <TabsContent value="alumni">
-                          <Form {...alumniForm}>
-                            <form
-                              className="space-y-5 mt-2"
-                              onSubmit={alumniForm.handleSubmit(
-                                handleAlumniLogin
+                                  <FormControl>
+                                    <Input
+                                      type="password"
+                                      placeholder=""
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
                               )}
-                            >
-                              <div className="flex justify-center">
-                                <div className="">
-                                  <Label
-                                    className={
-                                      "text-2xl w-full font-serif text-center "
-                                    }
-                                  >
-                                    Alumni Login
-                                  </Label>
-                                </div>
+                            />
+                            <div className="flex justify-between items-center">
+                              <div className="">
+                                <FormField
+                                  control={userForm.control}
+                                  name="rememberMe"
+                                  render={({ field }) => (
+                                    <FormItem className={"flex "}>
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value}
+                                          onCheckedChange={field.onChange}
+                                        />
+                                      </FormControl>
+
+                                      <FormLabel>Remember me</FormLabel>
+                                    </FormItem>
+                                  )}
+                                />
                               </div>
-                              <FormField
-                                control={alumniForm.control}
-                                name="email"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        type="email"
-                                        placeholder=""
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
+                              <Button
+                                type="button"
+                                variant="link"
+                                onClick={() => router.push("forgot-password")}
+                              >
+                                forgot password
+                              </Button>
+                            </div>
+                            <div className="flex justify-between ">
+                              <Button type="submit" className="w-full h-10">
+                                {loading ? (
+                                  <Loader2 className="animate-spin" />
+                                ) : (
+                                  "Sign in"
                                 )}
-                              />
-                              <FormField
-                                control={alumniForm.control}
-                                name="password"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                              </Button>
+                            </div>
+                          </form>
+                        </Form>
 
-                                    <FormControl>
-                                      <Input
-                                        type="password"
-                                        placeholder=""
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={studentForm.control}
-                                name="rememberMe"
-                                render={({ field }) => (
-                                  <FormItem className={"flex "}>
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                      />
-                                    </FormControl>
-
-                                    <FormLabel>Remember me</FormLabel>
-                                  </FormItem>
-                                )}
-                              />
-                              <div className="flex justify-between">
-                                <Button type="submit" className="">
-                                  Sign in
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="link"
-                                  onClick={() => router.push("forgot-password")}
-                                >
-                                  forgot password
-                                </Button>
-                              </div>
-                            </form>
-                          </Form>
-                        </TabsContent>
-                      </Tabs>
-
-                      <div className="space-y-6">
-                        <div className="flex flex-col items-center justify-center space-y-2">
-                          <div className="text-sm">
-                            <span className="text-gray-600">
-                              New to Alma-Sync ?
-                            </span>{" "}
-                            <Button
-                              type="button"
-                              variant="link"
-                              onClick={() => router.push("/signup")}
-                            >
-                              Register
-                            </Button>
-                          </div>
+                        <div className="text-sm flex  items-center gap-1 justify-center ">
+                          <span className="text-gray-600">
+                            New to Alma-Sync ?
+                          </span>{" "}
+                          <Button
+                            type="button"
+                            variant="link"
+                            onClick={() => router.push("/signup")}
+                          >
+                            Register
+                          </Button>
                         </div>
                       </div>
                     </div>
