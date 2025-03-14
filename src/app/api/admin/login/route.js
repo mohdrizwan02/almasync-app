@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import bcrypt from "bcryptjs";
-import User from "@/models/user.model";
+import Admin from "@/models/admin.model";
 import { NextResponse } from "next/server";
 
 import jwt from "jsonwebtoken";
@@ -13,14 +13,12 @@ export async function POST(request) {
 
     const { email, password } = reqBody;
 
-    console.log(password);
+    const admin = await Admin.findOne({ email });
 
-    const user = await User.findOne({ email });
-
-    if (!user) {
+    if (!admin) {
       return NextResponse.json(
         {
-          error: "user not found invalid email address",
+          error: "admin not found invalid email address",
           success: false,
         },
         {
@@ -29,7 +27,7 @@ export async function POST(request) {
       );
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(password, admin.password);
 
     if (!isPasswordCorrect) {
       return NextResponse.json(
@@ -43,12 +41,12 @@ export async function POST(request) {
       );
     }
 
-    const userData = await User.findById(user._id).select("-password");
+    const adminData = await Admin.findById(admin._id).select("-password");
 
     const tokenData = {
-      _id: userData._id,
-      role: userData.role,
-      email: userData.email,
+      _id: adminData._id,
+      role: "admin",
+      email: adminData.email,
     };
 
     const token = jwt.sign(tokenData, process.env.JWT_TOKEN_SECRET, {
@@ -57,7 +55,7 @@ export async function POST(request) {
 
     const response = NextResponse.json(
       {
-        message: "user has been logged in successfully",
+        message: "admin has been logged in successfully",
         success: true,
       },
       {
@@ -74,7 +72,7 @@ export async function POST(request) {
       secure: true,
     });
 
-    response.cookies.set("userRole", userData.role, {
+    response.cookies.set("userRole", "admin", {
       httpOnly: true,
       expires: cookieExpiry,
       secure: true,
@@ -84,7 +82,7 @@ export async function POST(request) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: "server error has occurred",
+        error: "server error has occurred try again",
         success: false,
       },
       {

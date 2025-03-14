@@ -5,11 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { loginSchema } from "@/schemas/login.schema";
 
-import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   Form,
@@ -34,6 +34,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 
 const AdminLoginPage = () => {
+  const router = useRouter();
   const adminForm = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -46,16 +47,19 @@ const AdminLoginPage = () => {
     console.log(values);
 
     axios
-      .post("/api/auth/login", values)
+      .post("/api/admin/login", values)
       .then((response) => {
         console.log(response);
+        if (response.data.success) {
+          toast.success("Successfully logged in");
+          router.push("/admin");
+        }
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const router = useRouter();
   return (
     <>
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">

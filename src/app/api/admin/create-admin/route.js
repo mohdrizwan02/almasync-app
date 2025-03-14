@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import Admin from "@/models/admin.model";
 import { NextResponse } from "next/server";
+import bcryptjs from "bcryptjs";
 
 dbConnect();
 
@@ -20,9 +21,11 @@ export async function POST(request) {
       throw new Error("admin already exists with this email");
     }
 
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
     const newAdmin = await Admin.create({
       email,
-      password,
+      password: hashedPassword,
     });
 
     if (!newAdmin) {
