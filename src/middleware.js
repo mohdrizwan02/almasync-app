@@ -2,7 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request) {
   const studentRoutes = ["/student"];
-  const adminRoutes = ["/admin"];
+  const adminRoutes = [
+    "/admin",
+    "/admin/alumni",
+    "/admin/alumni-analytics",
+    "/admin/students",
+    "/admin/student-analytics",
+    "/admin/jobs",
+    "/admin/job-analytics",
+    "/admin/internships",
+    "/admin/internship-analytics",
+    "/admin/mentorships",
+    "/admin/mentorship-analytics"
+  ];
   const alumniRoutes = ["/alumni"];
 
   const token = request.cookies.get("token")?.value || "";
