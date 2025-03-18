@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 import {
   Bell,
+  CircleCheck,
   CircleUser,
   Menu,
   MessageSquareText,
   Search,
-  X,
 } from "lucide-react";
 
 import { Input } from "./ui/input";
@@ -27,21 +28,50 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  Dr,
 } from "@/components/ui/dropdown-menu";
 
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 
 const Navbar = () => {
+  const navItems = [
+    {
+      name: "home",
+      href: "/student",
+    },
+    {
+      name: "Alumni",
+      href: "/student/alumni-directory",
+    },
+    {
+      name: "Students",
+      href: "/student/student-directory",
+    },
+    {
+      name: "Jobs",
+      href: "/student/jobs",
+    },
+    {
+      name: "Internships",
+      href: "/student/internships",
+    },
+    {
+      name: "Mentorships",
+      href: "/student/mentors",
+    },
+    {
+      name: "webinars",
+      href: "/student/webinars",
+    },
+  ];
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   const [searchTerm, setSearchTerm] = useState("");
+  console.log(pathname);
 
   return (
     <div className="border-b mb-2  bg-white px-4 flex h-16 items-center w-full">
@@ -126,28 +156,18 @@ const Navbar = () => {
                 <Menu className="w-6 h-6 cursor-pointer text-gray-700" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Menu</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent className="w-56 mr-5 rounded-lg p-3 shadow">
               <DropdownMenuGroup>
-                <Link href={"/"}>
-                  <DropdownMenuItem>Alumni</DropdownMenuItem>
-                </Link>
-                <Link href={"/"}>
-                  <DropdownMenuItem>Students</DropdownMenuItem>
-                </Link>
-                <Link href={"/"}>
-                  <DropdownMenuItem>Jobs</DropdownMenuItem>
-                </Link>
-                <Link href={"/"}>
-                  <DropdownMenuItem>Internships</DropdownMenuItem>
-                </Link>
-                <Link href={"/"}>
-                <DropdownMenuItem>webinars</DropdownMenuItem>
-                </Link>
-                <Link href={"/"}>
-                  <DropdownMenuItem>Mentorships</DropdownMenuItem>
-                </Link>
+                {navItems.map((item, index) => (
+                  <Link href={item.href} key={index}>
+                    <DropdownMenuItem
+                      className={"flex gap-3 cursor-pointer justify-between"}
+                    >
+                      {item.name}
+                      {pathname === item.href && <CircleCheck />}
+                    </DropdownMenuItem>
+                  </Link>
+                ))}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

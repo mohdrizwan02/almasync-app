@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request) {
-  const studentRoutes = ["/student"];
+  const studentRoutes = [
+    "/student",
+    "/student/alumni-directory",
+    "/student/student-directory",
+    "/student/jobs",
+    "/student/internships",
+    "/student/mentors",
+    "/student/webinars",
+  ];
   const adminRoutes = [
     "/admin",
     "/admin/alumni",
@@ -13,7 +21,7 @@ export async function middleware(request) {
     "/admin/internships",
     "/admin/internship-analytics",
     "/admin/mentorships",
-    "/admin/mentorship-analytics"
+    "/admin/mentorship-analytics",
   ];
   const alumniRoutes = ["/alumni"];
 
