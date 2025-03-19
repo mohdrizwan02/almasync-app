@@ -5,12 +5,21 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 import {
+  
   Bell,
+  Building2Icon,
   CircleCheck,
   CircleUser,
+  GraduationCap,
+  Home,
+  
+  LucideBriefcaseBusiness,
   Menu,
   MessageSquareText,
+  PencilRuler,
   Search,
+  Users,
+  Users2Icon,
 } from "lucide-react";
 
 import { Input } from "./ui/input";
@@ -27,8 +36,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Dr,
 } from "@/components/ui/dropdown-menu";
@@ -40,35 +47,41 @@ const Navbar = () => {
   const navItems = [
     {
       name: "home",
-      href: "/student",
+      href: "/alumni",
+      icon: <Home />,
     },
     {
       name: "Alumni",
-      href: "/student/alumni-directory",
+      href: "/alumni/alumni-directory",
+      icon: <Users2Icon />,
     },
     {
       name: "Students",
-      href: "/student/student-directory",
+      href: "/alumni/alumni-directory",
+      icon: <Users />,
     },
     {
       name: "Jobs",
-      href: "/student/jobs",
+      href: "/alumni/jobs",
+      icon: <LucideBriefcaseBusiness />,
     },
     {
       name: "Internships",
-      href: "/student/internships",
+      href: "/alumni/internships",
+      icon: <Building2Icon />,
     },
     {
       name: "Mentorships",
-      href: "/student/mentors",
+      href: "/alumni/mentors",
+      icon: <GraduationCap />,
     },
     {
       name: "webinars",
-      href: "/student/webinars",
+      href: "/alumni/webinars",
+      icon: <PencilRuler />,
     },
   ];
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const [searchTerm, setSearchTerm] = useState("");
   console.log(pathname);
@@ -80,11 +93,11 @@ const Navbar = () => {
           <NavigationMenu>
             <NavigationMenuList className={"flex gap-6 items-center"}>
               <NavigationMenuItem>
-                <NavigationMenuLink href="/student">
+                <NavigationMenuLink href="/alumni">
                   <img src="/almasync.png" className="h-7" />
                 </NavigationMenuLink>
               </NavigationMenuItem>
-              <div className="hidden lg:block relative p-1">
+              <div className="hidden sm:block relative p-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search. . ."
@@ -141,33 +154,34 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           <Bell className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
           <MessageSquareText className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
-          <Link href="/student">
+          <Link href="/alumni">
             <CircleUser className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className={"lg:hidden m-0"}
-                onClick={() => {
-                  setIsMobileMenuOpen((prev) => !prev);
-                }}
-              >
+              <Button variant="ghost" className={"lg:hidden m-0"}>
                 <Menu className="w-6 h-6 cursor-pointer text-gray-700" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mr-5 rounded-lg p-3 shadow">
-              <DropdownMenuGroup>
-                {navItems.map((item, index) => (
-                  <Link href={item.href} key={index}>
-                    <DropdownMenuItem
-                      className={"flex gap-3 cursor-pointer justify-between"}
-                    >
-                      {item.name}
-                      {pathname === item.href && <CircleCheck />}
-                    </DropdownMenuItem>
-                  </Link>
-                ))}
+              <DropdownMenuGroup className="">
+                
+                  {navItems.map((item, index) => (
+                    <Link href={item.href} key={index}>
+                      <DropdownMenuItem
+                        className={"flex gap-3 cursor-pointer justify-between"}
+                      >
+                        <div className="flex gap-2 items-center">
+                          {item.icon}
+                          {item.name}
+                        </div>
+                        {pathname === item.href && (
+                          <CircleCheck className="text-orange-500" />
+                        )}
+                      </DropdownMenuItem>
+                    </Link>
+                  ))}
+                
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
