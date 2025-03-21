@@ -9,6 +9,8 @@ export async function middleware(request) {
     "/student/internships",
     "/student/mentors",
     "/student/webinars",
+    "/student/internship-portal",
+    "/demo"
   ];
   const adminRoutes = [
     "/admin",
@@ -70,5 +72,6 @@ export const config = {
     "/student/:path*",
     "/alumni/:path*",
     "/forgot-password",
+    "/demo"
   ],
 };
