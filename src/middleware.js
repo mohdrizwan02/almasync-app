@@ -10,7 +10,7 @@ export async function middleware(request) {
     "/student/mentors",
     "/student/webinars",
     "/student/internship-portal",
-    "/demo"
+    "/demo",
   ];
   const adminRoutes = [
     "/admin",
@@ -28,8 +28,6 @@ export async function middleware(request) {
   const alumniRoutes = ["/alumni"];
 
   const token = request.cookies.get("token")?.value || "";
-
-  console.log("middleware running");
 
   const userRole = request.cookies.get("userRole")?.value || "";
 
@@ -72,6 +70,6 @@ export const config = {
     "/student/:path*",
     "/alumni/:path*",
     "/forgot-password",
-    "/demo"
+    "/demo",
   ],
 };
