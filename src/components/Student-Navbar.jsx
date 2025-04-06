@@ -35,7 +35,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Dr,
 } from "@/components/ui/dropdown-menu";
 
 import { Label } from "./ui/label";
@@ -91,24 +90,16 @@ const Navbar = () => {
           <NavigationMenu>
             <NavigationMenuList className={"flex gap-6 items-center"}>
               <NavigationMenuItem>
-                <NavigationMenuLink href="/student">
+                <Link href="/student/">
                   <img src="/almasync.png" className="h-7" />
-                </NavigationMenuLink>
+                </Link>
               </NavigationMenuItem>
-              <div className="hidden lg:block relative p-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search. . ."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+
               <div className="hidden lg:flex gap-4 ">
                 <NavigationMenuItem className={""}>
                   <NavigationMenuLink
                     className="hover:bg-orange-500/40 px-3 py-2 rounded-lg"
-                    href="/"
+                    href="/student/alumni-directory"
                   >
                     <Label className={"cursor-pointer"}>Alumni</Label>
                   </NavigationMenuLink>
@@ -116,7 +107,7 @@ const Navbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     className="hover:bg-orange-500/40 px-3 py-2 rounded-lg"
-                    href="/"
+                    href="/student/student-directory"
                   >
                     <Label className={"cursor-pointer"}>Students</Label>
                   </NavigationMenuLink>
@@ -124,7 +115,7 @@ const Navbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     className="hover:bg-orange-500/40 px-3 py-2 rounded-lg"
-                    href="/"
+                    href="/student/jobs"
                   >
                     <Label className={"cursor-pointer"}>Jobs</Label>
                   </NavigationMenuLink>
@@ -132,7 +123,7 @@ const Navbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     className="hover:bg-orange-500/40 px-3 py-2 rounded-lg"
-                    href="/"
+                    href="/student/internships"
                   >
                     <Label className={"cursor-pointer"}>Internships</Label>
                   </NavigationMenuLink>
@@ -140,7 +131,7 @@ const Navbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     className="hover:bg-orange-500/40 px-3 py-2 rounded-lg"
-                    href="/"
+                    href="/student/mentors"
                   >
                     <Label className={"cursor-pointer"}>Mentorships</Label>
                   </NavigationMenuLink>
@@ -150,9 +141,13 @@ const Navbar = () => {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-4">
-          <Bell className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
-          <MessageSquareText className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
-          <Link href="/student">
+          <Link href="/student/notifications">
+            <Bell className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
+          </Link>
+          <Link href="/student/messages">
+            <MessageSquareText className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
+          </Link>
+          <Link href="/student/profile">
             <CircleUser className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
           </Link>
           <DropdownMenu>
@@ -172,7 +167,9 @@ const Navbar = () => {
                         {item.icon}
                         {item.name}
                       </div>
-                      {pathname === item.href && <CircleCheck className="text-orange-500" />}
+                      {pathname === item.href && (
+                        <CircleCheck className="text-orange-500" />
+                      )}
                     </DropdownMenuItem>
                   </Link>
                 ))}

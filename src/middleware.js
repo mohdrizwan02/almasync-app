@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request) {
+  console.log("middleware running");
   const studentRoutes = [
     "/student",
     "/student/alumni-directory",
     "/student/student-directory",
+
     "/student/jobs",
     "/student/internships",
     "/student/mentors",
     "/student/webinars",
     "/student/internship-portal",
-    "/demo",
   ];
   const adminRoutes = [
     "/admin",
@@ -37,20 +38,33 @@ export async function middleware(request) {
     path === "/login" ||
     path === "/signup" ||
     path === "/login/admin" ||
-    path === "/" ||
     path === "/forgot-password";
+
+  const isStudentRoute =
+    studentRoutes.some((route) => path.startsWith(route)) ||
+    path.startsWith("/student");
+  const isAdminRoute =
+    adminRoutes.some((route) => path.startsWith(route)) ||
+    path.startsWith("/admin");
+  const isAlumniRoute = alumniRoutes.some((route) => path.startsWith(route));
+
+  console.log(isStudentRoute, isAdminRoute, isAlumniRoute);
 
   if (token) {
     if (isPublicPath) {
       return NextResponse.redirect(new URL(`/${userRole}`, request.url));
     } else {
-      if (userRole === "student" && !studentRoutes.includes(path)) {
+      if (!userRole && (isStudentRoute || isAdminRoute || isAlumniRoute)) {
+        return NextResponse.redirect(new URL(`/`, request.url));
+      }
+      if (userRole === "student" && !isStudentRoute) {
         return NextResponse.redirect(new URL(`/${userRole}`, request.url));
       }
-      if (userRole === "admin" && !adminRoutes.includes(path)) {
+      if (userRole === "admin" && !isAdminRoute) {
         return NextResponse.redirect(new URL(`/${userRole}`, request.url));
       }
-      if (userRole === "alumni" && !alumniRoutes.includes(path)) {
+
+      if (userRole === "alumni" && !isAlumniRoute) {
         return NextResponse.redirect(new URL(`/${userRole}`, request.url));
       }
     }

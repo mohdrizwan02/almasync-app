@@ -21,7 +21,7 @@ const noScrollbarCSS = `
   }
 `;
 
-const Carousel = ({ type, items }) => {
+const Carousel = ({ type, data }) => {
   const carouselRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -85,7 +85,7 @@ const Carousel = ({ type, items }) => {
           )}
         </AnimatePresence>
 
-        {/* Carousel Items */}
+        {/* Carousel data */}
         <motion.div
           ref={carouselRef}
           className="flex space-x-8 overflow-x-auto scrollbar-hide p-4 no-scrollbar"
@@ -95,18 +95,18 @@ const Carousel = ({ type, items }) => {
             scrollbarWidth: "none",
           }}
         >
-          {items.map((item, index) => (
+          {data.map((item, index) => (
             <motion.div
               key={index}
               className="flex-shrink-0"
               style={{ scrollSnapAlign: "start" }}
             >
-              {type === "job" && <JobCard item={item} />}
-              {type === "feature" && <FeatureCard item={item} />}
-              {type === "alumni" && <AlumniCard item={item} />}
-              {type === "internship" && <InternshipCard item={item} />}
-              {type === "mentor" && <MentorCard item={item} />}
-              {type === "webinar" && <WebinarCard item={item} />}
+              {type === "job" && <JobCard job={item} />}
+              {type === "feature" && <FeatureCard feature={item} />}
+              {type === "alumni" && <AlumniCard alumni={item} />}
+              {type === "internship" && <InternshipCard internship={item} />}
+              {type === "mentor" && <MentorCard mentor={item} />}
+              {type === "webinar" && <WebinarCard event={item} />}
             </motion.div>
           ))}
         </motion.div>

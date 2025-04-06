@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Building2, ArrowRight } from "lucide-react";
-const FeatureCard = ({ item }) => {
+const FeatureCard = ({ feature }) => {
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
@@ -12,17 +12,17 @@ const FeatureCard = ({ item }) => {
       <div className="flex flex-col h-full">
         <div className="">
           <div
-            className={`${item.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-4`}
+            className={`${feature.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-4`}
           >
-            {item.icon}
+            {feature.icon}
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">{item.title}</h3>
-          <p className="text-gray-600 mb-6">{item.description}</p>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">{feature.title}</h3>
+          <p className="text-gray-600 mb-6">{feature.description}</p>
         </div>
         <div className="mt-auto">
           <a
             href="#"
-            className={`flex items-center  ${item.learnMoreColor} font-medium`}
+            className={`flex items-center  ${feature.learnMoreColor} font-medium`}
           >
             Learn More <ArrowRight className="ml-1 h-4 w-4" />
           </a>

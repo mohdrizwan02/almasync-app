@@ -59,6 +59,23 @@ const AlumniProfileSchema = new mongoose.Schema({
   coverImage: {
     type: String,
   },
+
+  currentlyWorkingIn: {
+    type: String,
+  },
+
+  currentlyWorkingAt: {
+    type: String,
+  },
+
+  currentlyWorkingAs: {
+    type: String,
+  },
+
+  currentExperience: {
+    type: String,
+  },
+
   profileHeadline: {
     type: String,
   },
@@ -105,6 +122,7 @@ const AlumniProfileSchema = new mongoose.Schema({
 
       //onsite remote etc
       employmentWorkType: String,
+
       employmentStartDate: Date,
       employmentEndDate: Date,
       employmentDescription: String,
@@ -118,11 +136,7 @@ const AlumniProfileSchema = new mongoose.Schema({
       certificationExpirationDate: Date,
       certificationId: String,
       certificationUrl: String,
-      certificationAssociatedSkills: [
-        {
-          type: String,
-        },
-      ],
+      certificationAssociatedSkills: ["String"],
     },
   ],
   socials: {
@@ -149,4 +163,4 @@ const alumniProfileModel =
   mongoose.models.alumniprofiles ||
   mongoose.model("alumniprofiles", AlumniProfileSchema);
 
-  export default alumniProfileModel
+export default alumniProfileModel;

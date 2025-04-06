@@ -11,14 +11,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Label } from "./ui/label";
-const JobCard = ({ item }) => {
+const JobCard = ({ job }) => {
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
-      className="bg-gray-100 rounded-xl p-6 shadow-lg cursor-pointer sm:w-80 w-72 h-80 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
+      className=" rounded-xl p-6 shadow-lg cursor-pointer sm:w-80 w-72 h-92 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full">
         <div className="flex items-center mb-4">
           <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden">
             <img
@@ -28,12 +28,10 @@ const JobCard = ({ item }) => {
             />
           </div>
           <div className="ml-4">
-            <h2 className="text-xl font-semibold text-blue-600">
-              AI Developer
-            </h2>
+            <h2 className="text-xl font-semibold text-blue-600">{job.role}</h2>
             <div className="flex items-center text-gray-500 text-sm">
               <Building2 className="w-4 h-4 mr-1" />
-              <span>Google</span>
+              <span>{job.company}</span>
             </div>
           </div>
         </div>
@@ -41,41 +39,50 @@ const JobCard = ({ item }) => {
           <div className="flex items-center">
             <MapPin className="w-5 h-5 text-red-400 mr-2" />
             <div>
-              <p className="text-gray-500 text-sm">location</p>
+              <p className="text-gray-500 text-sm">{job.location}</p>
             </div>
           </div>
           <div className="flex items-center">
             <Clock className="w-5 h-5 text-amber-400 mr-2" />
             <div>
-              <p className="text-gray-500">experience</p>
+              <p className="text-gray-500">{job.experience}</p>
             </div>
           </div>
           <div className=" col-span-2 flex items-center">
             <Briefcase className="w-5 h-5 text-red-400 mr-2" />
             <div>
-              <p className="text-gray-500 text-sm">job type</p>
+              <p className="text-gray-500 text-sm">{job.type}</p>
             </div>
           </div>
         </div>
         <div className="flex items-center mb-4">
           <DollarSign className="w-5 h-5 text-green-500 mr-2" />
-          <p className="text-green-500">₹20.0L - 22.0L</p>
+          <p className="text-green-500">{job.salary}</p>
         </div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((item, index) => (
-            <Label  
-              key={index}
-              className={"bg-orange-300/20 px-2 py-1.5 rounded-full"}
-            >
-              skill {item}
-            </Label>
-          ))}
+        <div className="flex flex-wrap gap-1 mb-4">
+          {job.skills &&
+            job.skills.slice(0, 3).map((skill, index) => (
+              <span
+                key={index}
+                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+              >
+                {skill}
+              </span>
+            ))}
+
+          {job.skills && job.skills.length > 3 && (
+            <span className="px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-sm">
+              +{job.skills.length - 3} more
+            </span>
+          )}
         </div>
-        <div className="flex items-center text-gray-500 text-sm mb-6">
+        <div className="flex items-center mt-auto text-gray-500 text-sm ">
           <Calendar className="w-4 h-4 mr-1" />
-          <span>Posted 8 days ago</span>
+          <span>Posted {job.postedDaysAgo} days ago</span>
           <span className="mx-2">•</span>
-          <span className="text-green-500">Active</span>
+          <span className="text-green-500">
+            {job.isActive ? "active" : "expired"}
+          </span>
         </div>
       </div>
     </motion.div>
