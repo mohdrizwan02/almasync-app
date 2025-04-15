@@ -39,8 +39,8 @@ const StudentProfileSchema = new mongoose.Schema(
       type: String,
     },
 
-    profileHeadline:{
-      type:String
+    profileHeadline: {
+      type: String,
     },
 
     gender: {

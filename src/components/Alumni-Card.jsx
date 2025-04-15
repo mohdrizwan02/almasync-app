@@ -9,12 +9,16 @@ import {
   Briefcase,
   Clock,
 } from "lucide-react";
-const AlumniCard = ({ alumni }) => {
+import { useRouter } from "next/navigation";
+
+const AlumniCard = ({ alumni, action }) => {
+  const router = useRouter();
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
       className="bg-white rounded-xl px-4 py-6 shadow-md cursor-pointer w-72 sm:w-86  h-98 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
+      onClick={() => router.push(`${action}/alumni-directory/${alumni.userId}`)}
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center mb-4">

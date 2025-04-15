@@ -8,7 +8,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Save } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  Save,
+} from "lucide-react";
 
 import { toast } from "sonner";
 
@@ -36,6 +43,21 @@ import { Github, Linkedin, Twitter, Globe } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 function EducationForm({ data, updateData }) {
   const [education, setEducation] = useState(data.education || []);
@@ -1065,7 +1087,9 @@ function SocialContactForm({ data, updateData }) {
   );
 }
 
-function SkillsCertificationsForm({ data, updateData }) {
+function SkillsCertificationsForm({ allSkills, data, updateData }) {
+  const [open, setOpen] = useState(false);
+
   const [skills, setSkills] = useState(data.skills || []);
   const [languages, setLanguages] = useState(data.communicationLanguages || []);
   const [hobbies, setHobbies] = useState(data.hobbies || []);
@@ -1079,9 +1103,8 @@ function SkillsCertificationsForm({ data, updateData }) {
   const [newCertSkill, setNewCertSkill] = useState("");
 
   // Skills handlers
-  const handleAddSkill = () => {
-    if (!newSkill.trim()) return;
-    const updatedSkills = [...skills, newSkill.trim()];
+  const handleAddSkill = (skill) => {
+    const updatedSkills = [...skills, skill];
     setSkills(updatedSkills);
     updateData("skills", { skills: updatedSkills });
     setNewSkill("");
@@ -1246,22 +1269,50 @@ function SkillsCertificationsForm({ data, updateData }) {
             </Badge>
           ))}
         </div>
-        <div className="flex gap-2">
-          <Input
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            placeholder="Add a skill (e.g., JavaScript, Project Management)"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddSkill();
-              }
-            }}
-          />
-          <Button type="button" variant="outline" onClick={handleAddSkill}>
-            Add
-          </Button>
-        </div>
+
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger className={""} asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full max-w-72 justify-between"
+            >
+              {skills.length == 0
+                ? "select skills"
+                : `${skills.length} skills selected `}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full max-w-72 p-0">
+            <Command>
+              <CommandInput placeholder="Search skill.." className="h-9" />
+              <CommandList className={"w-full max-w-72"}>
+                <CommandEmpty>No skills found.</CommandEmpty>
+                <CommandGroup>
+                  {allSkills.map((skill, index) => (
+                    <CommandItem
+                      key={index}
+                      value={skill}
+                      onSelect={(currentValue) => {
+                        handleAddSkill(currentValue);
+                        setOpen(false);
+                      }}
+                    >
+                      {skill}
+                      <Check
+                        className={cn(
+                          "ml-auto",
+                          skills.includes(skill) ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </motion.div>
 
       <motion.div variants={itemVariants} className="space-y-4">
@@ -1964,7 +2015,21 @@ export default function ProfileUpdatePage() {
     },
   });
 
+  const [allSkills, setAllSkills] = useState([]);
+
   const totalSteps = 6;
+
+  useEffect(() => {
+    try {
+      axios.get("/api/get-skills").then((response) => {
+        if (response.data.success) {
+          setAllSkills((prev) => response.data.skillData);
+        }
+      });
+    } catch (error) {
+      console.log("error occurred ");
+    }
+  }, []);
 
   useEffect(() => {
     axios
@@ -1982,7 +2047,7 @@ export default function ProfileUpdatePage() {
       });
   }, []);
 
-  const updateFormData = (section, data) => {
+  const updateFormData = (data) => {
     setFormData((prev) => ({
       ...prev,
       ...data,
@@ -2111,6 +2176,7 @@ export default function ProfileUpdatePage() {
       case 4:
         return (
           <SkillsCertificationsForm
+            allSkills={allSkills}
             data={formData}
             updateData={updateFormData}
           />

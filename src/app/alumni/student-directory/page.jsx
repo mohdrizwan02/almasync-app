@@ -387,7 +387,7 @@ export default function StudentDirectoryPage() {
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {studentData.map((student, index) => (
                     <div key={index} className="flex justify-center">
-                      <StudentCard student={student} />
+                      <StudentCard student={student} action="alumni" />
                     </div>
                   ))}
                 </div>

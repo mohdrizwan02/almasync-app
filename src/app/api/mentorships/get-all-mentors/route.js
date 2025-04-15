@@ -7,7 +7,7 @@ await dbConnect();
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     const category = searchParams.get("category");
     const skill = searchParams.get("skill");
     const department = searchParams.get("department");
@@ -28,7 +28,7 @@ export async function GET(request) {
     }
 
     if (experience) {
-      match["alumniProfile.mentorshipExperience"] = experience;
+      match["alumniProfile.mentorshipExperience"] = Number(experience);
     }
 
     match["alumniProfile.availableForMentorship"] = true;

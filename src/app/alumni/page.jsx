@@ -92,8 +92,8 @@ const AlumniPage = () => {
       axios
         .get("/api/mentorships/get-recent-mentors")
         .then((response) => {
-          if(response.data.success){
-            setMentorData((prev)=>response.data.mentorData)
+          if (response.data.success) {
+            setMentorData((prev) => response.data.mentorData);
           }
         })
         .catch((error) => {

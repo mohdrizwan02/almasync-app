@@ -345,7 +345,7 @@ export default function InternshipsPage() {
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {internshipData.map((internship, index) => (
                     <div key={index} className="flex justify-center">
-                      <InternshipCard internship={internship} />
+                      <InternshipCard internship={internship} action={"alumni"} />
                     </div>
                   ))}
                 </div>

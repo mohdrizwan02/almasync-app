@@ -3,12 +3,15 @@
 import { motion } from "framer-motion";
 import { Briefcase, Building2, Calendar, HandCoins } from "lucide-react";
 import { Label } from "./ui/label";
-const InternshipCard = ({ internship }) => {
+import { useRouter } from "next/navigation";
+const InternshipCard = ({ internship, action }) => {
+  const router = useRouter();
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
       className="bg-white  rounded-xl p-6 shadow-lg cursor-pointer  sm:w-80 w-72 h-84 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
+      onClick={() => router.push(`/${action}/internships/${internship.id}`)}
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center mb-4">

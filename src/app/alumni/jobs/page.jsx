@@ -457,7 +457,7 @@ export default function JobsPage() {
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {jobData.map((job, index) => (
                     <div key={index} className="flex justify-center">
-                      <JobCard job={job} />
+                      <JobCard job={job} action="alumni" />
                     </div>
                   ))}
                 </div>

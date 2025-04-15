@@ -2,12 +2,17 @@
 
 import { motion } from "framer-motion";
 import { Star, Trophy, BadgeCheck, GraduationCap } from "lucide-react";
-const StudentCard = ({ student }) => {
+import { useRouter } from "next/navigation";
+const StudentCard = ({ student, action }) => {
+  const router = useRouter()
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
       className="bg-white rounded-xl pb-6 shadow-md cursor-pointer  w-80 h-86 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
+      onClick={() =>
+        router.push(`/${action}/student-directory/${student.userId}`)
+      }
     >
       <div className="flex flex-col rounded-t-xl w-full h-full">
         <div className="relative h-24 rounded-t-xl bg-yellow-200">

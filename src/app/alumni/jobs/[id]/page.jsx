@@ -1,419 +1,422 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Calendar,
-  Clock,
-  Globe,
-  MapPin,
-  Building,
   Briefcase,
+  MapPin,
+  Clock,
+  Calendar,
   DollarSign,
-  Users,
+  Building,
+  CheckCircle,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import axios from "axios";
+import { toast } from "sonner";
 
-// Mock job data - in a real app, you would fetch this from an API
-const jobData = {
-  id: "job-123",
-  title: "Senior Frontend Developer",
-  company: "TechCorp Solutions",
-  logo: "/placeholder.svg?height=80&width=80",
-  location: "San Francisco, CA (Remote Option)",
-  salary: "$120,000 - $150,000",
-  jobType: "Full-time",
-  experience: "5+ years",
-  postedDate: "2 days ago",
-  applicationDeadline: "April 30, 2025",
-  applicants: 42,
-  description:
-    "We're looking for a Senior Frontend Developer to join our growing team. You'll be responsible for building responsive web applications, collaborating with designers, and mentoring junior developers.",
-  responsibilities: [
-    "Develop and maintain responsive web applications using React and Next.js",
-    "Collaborate with designers to implement UI/UX designs",
-    "Write clean, maintainable, and efficient code",
-    "Perform code reviews and mentor junior developers",
-    "Optimize applications for maximum speed and scalability",
-  ],
-  requirements: [
-    "5+ years of experience in frontend development",
-    "Strong proficiency in JavaScript, TypeScript, React, and Next.js",
-    "Experience with responsive design and CSS frameworks like Tailwind",
-    "Knowledge of frontend build tools and package managers",
-    "Excellent problem-solving and communication skills",
-  ],
-  benefits: [
-    "Competitive salary and equity package",
-    "Flexible remote work options",
-    "Health, dental, and vision insurance",
-    "401(k) matching",
-    "Professional development budget",
-    "Unlimited PTO policy",
-  ],
-};
+export default function JobDetailsPage() {
+  const { id } = useParams();
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [applying, setAppliying] = useState(false);
+  const [jobApplied, setJobApplied] = useState(false);
 
-export default function JobPostingPage({ params }) {
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
+  useEffect(() => {
+    try {
+      axios
+        .post("/api/jobs/get-job", {
+          jobId: id,
+        })
+        .then((response) => {
+          console.log(response);
+          if (response.data.success) {
+            setJob((prev) => response.data.job);
+            setLoading((prev) => false);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          setError("error occurred");
+          setLoading((perv) => false);
+        });
+    } catch (err) {
+      setError(err.message);
+      setLoading((prev) => false);
+    }
+  }, []);
+
+  useEffect(() => {
+    axios
+      .post("/api/jobs/check-apply", {
+        jobId: id,
+      })
+      .then((response) => {
+        if (response.data.success) {
+          setJobApplied((prev) => response.data.applied);
+        }
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <h1 className="text-2xl font-bold text-red-500">Error</h1>
+        <p className="mt-2">{error}</p>
+        <Button className="mt-4" onClick={() => window.history.back()}>
+          Go Back
+        </Button>
+      </div>
+    );
+  }
+
+  const handleJobApply = async () => {
+    setAppliying((prev) => true);
+    try {
+      const response = await axios.post("/api/jobs/apply-job", {
+        jobId: id,
+      });
+
+      if (response.data.success) {
+        toast.success("successfully applied for this job");
+      }
+    } catch (error) {
+      toast.error("error occurred while applying the job try again");
+    }
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
-      transition: { duration: 0.6 },
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
     },
   };
-  const [isApplying, setIsApplying] = useState(false);
-  console.log(params);
 
-  const handleApply = () => {
-    setIsApplying(true);
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 },
+    },
+  };
 
-    setTimeout(() => {
-      setIsApplying(false);
-    }, 1500);
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   return (
-    <div className=" ">
-      {/* Banner Section */}
+    <motion.div
+      className="container mx-auto px-4 py-8 lg:max-w-6xl max-w-4xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Header */}
       <motion.div
-        className=" h-64 bg-linear-to-r from-yellow-400 via-orange-500 to-yellow-600"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        className="mb-8"
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100 }}
       >
-        <div className="container mx-auto px-4 h-full flex items-end pb-16">
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="z-10"
-          ></motion.div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">{job.jobTitle}</h1>
+            <div className="flex items-center mt-2 text-gray-600 dark:text-gray-300">
+              <Building className="w-4 h-4 mr-1" />
+              <span className="mr-4">{job.jobCompany}</span>
+              <MapPin className="w-4 h-4 mr-1" />
+              <span>{job.jobLocation}</span>
+            </div>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <Button
+              size="lg"
+              className="w-full md:w-auto"
+              onClick={handleJobApply}
+              disabled={jobApplied}
+            >
+              {jobApplied ? "Applied" : applying ? "applying" : "Apply Now"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-4">
+          {job.isJobVerified && (
+            <Badge
+              variant="outline"
+              className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+            >
+              <CheckCircle className="w-3 h-3 mr-1" /> Verified
+            </Badge>
+          )}
+          <Badge variant="secondary">{job.jobType}</Badge>
+          <Badge variant="secondary">{job.jobWorkType}</Badge>
+          <Badge variant="outline">
+            <Calendar className="w-3 h-3 mr-1" />
+            Posted: {formatDate(job.createdAt)}
+          </Badge>
         </div>
       </motion.div>
 
-      {/* Job Details Card */}
-      <div className="container mx-auto px-4 -mt-20">
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          <Card className="shadow-xl container mx-auto  max-w-7xl mb-8">
-            <CardHeader className="flex flex-col md:flex-row md:items-center gap-4">
-              <div className="flex-shrink-0 bg-white rounded-lg p-2 shadow-sm">
-                <img
-                  src={jobData.logo || "/placeholder.svg"}
-                  alt={`${jobData.company} logo`}
-                  className="w-16 h-16 object-contain"
-                />
-              </div>
-              <div className="flex-grow">
-                <CardTitle className="text-2xl">{jobData.title}</CardTitle>
-                <CardDescription className="text-lg">
-                  {jobData.company}
-                </CardDescription>
-              </div>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        {/* Main Content */}
+        <motion.div variants={itemVariants} className="md:col-span-2">
+          <Card className="mb-6 overflow-hidden">
+            <CardContent className="p-6">
               <motion.div
-                className="mt-4 md:mt-0"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
               >
-                <Button size="lg" onClick={handleApply} disabled={isApplying}>
-                  {isApplying ? "Applying..." : "Apply Now"}
-                </Button>
+                <h2 className="text-xl font-semibold mb-4">Job Description</h2>
+                <p className="text-gray-700 dark:text-gray-300 mb-6">
+                  {job.jobDescription}
+                </p>
+
+                <h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
+                <ul className="list-disc pl-5 mb-6 space-y-2">
+                  {job.jobResponsibilities.map((responsibility, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ x: -10, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 * index }}
+                      className="text-gray-700 dark:text-gray-300"
+                    >
+                      {responsibility}
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <h3 className="text-lg font-semibold mb-3">Qualifications</h3>
+                <ul className="list-disc pl-5 mb-6 space-y-2">
+                  {job.jobQualification.map((qualification, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ x: -10, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 * index }}
+                      className="text-gray-700 dark:text-gray-300"
+                    >
+                      {qualification}
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <h3 className="text-lg font-semibold mb-3">Eligibility</h3>
+                <ul className="list-disc pl-5 mb-6 space-y-2">
+                  {job.jobEligibility.map((eligibility, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ x: -10, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 * index }}
+                      className="text-gray-700 dark:text-gray-300"
+                    >
+                      {eligibility}
+                    </motion.li>
+                  ))}
+                </ul>
               </motion.div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-gray-500" />
-                  <span>{jobData.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-gray-500" />
-                  <span>{jobData.salary}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-gray-500" />
-                  <span>{jobData.jobType}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-gray-500" />
-                  <span>{jobData.experience}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="flex items-center gap-2 bg-slate-100 p-3 rounded-lg">
-                  <Calendar className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Posted</p>
-                    <p className="font-medium">{jobData.postedDate}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-slate-100 p-3 rounded-lg">
-                  <Calendar className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Apply by</p>
-                    <p className="font-medium">{jobData.applicationDeadline}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-slate-100 p-3 rounded-lg">
-                  <Users className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Applicants</p>
-                    <p className="font-medium">{jobData.applicants} applied</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  <h2 className="text-xl font-semibold mb-3">
-                    Job Description
-                  </h2>
-                  <p className="text-gray-700">{jobData.description}</p>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  <h2 className="text-xl font-semibold mb-3">
-                    Required Skills
-                  </h2>
-                  <div className="flex flex-wrap">
-                    <motion.div
-                      key={index}
-                      className="bg-blue-50 text-blue-600 px-2 text-xs py-1 rounded-md flex items-center"
-                      variants={fadeIn}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <Code className="w-4 h-4 mr-2" />
-                      java
-                    </motion.div>
-                    <motion.div
-                      key={index}
-                      className="bg-blue-50 text-blue-600 px-2 text-xs py-1 rounded-md flex items-center"
-                      variants={fadeIn}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <Code className="w-4 h-4 mr-2" />
-                      java
-                    </motion.div>
-                    <motion.div
-                      key={index}
-                      className="bg-blue-50 text-blue-600 px-2 text-xs py-1 rounded-md flex items-center"
-                      variants={fadeIn}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <Code className="w-4 h-4 mr-2" />
-                      java
-                    </motion.div>
-                    <motion.div
-                      key={index}
-                      className="bg-blue-50 text-blue-600 px-2 text-xs py-1 rounded-md flex items-center"
-                      variants={fadeIn}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <Code className="w-4 h-4 mr-2" />
-                      java
-                    </motion.div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                >
-                  <h2 className="text-xl font-semibold mb-3">
-                    Responsibilities
-                  </h2>
-                  <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                    {jobData.responsibilities.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6, duration: 0.5 }}
-                >
-                  <h2 className="text-xl font-semibold mb-3">Requirements</h2>
-                  <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                    {jobData.requirements.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7, duration: 0.5 }}
-                >
-                  <h2 className="text-xl font-semibold mb-3">Benefits</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {jobData.benefits.map((benefit, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                        <span>{benefit}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              </div>
             </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t pt-6">
-              <div className="flex gap-2 mb-4 sm:mb-0">
-                <Badge variant="outline">React</Badge>
-                <Badge variant="outline">Next.js</Badge>
-                <Badge variant="outline">TypeScript</Badge>
-                <Badge variant="outline">Tailwind CSS</Badge>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline">Save Job</Button>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button onClick={handleApply} disabled={isApplying}>
-                    {isApplying ? "Applying..." : "Apply Now"}
-                  </Button>
-                </motion.div>
-              </div>
-            </CardFooter>
           </Card>
+
+          <motion.div variants={itemVariants} className="mb-6">
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Required Skills</h2>
+                <div className="flex flex-wrap gap-2">
+                  {job.jobSkills.map((skill, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.05 * index }}
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <Badge className="px-3 py-1 text-sm">{skill}</Badge>
+                    </motion.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
 
-        {/* Company Info Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="mb-12"
-        >
+        {/* Sidebar */}
+        <motion.div variants={itemVariants} className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">About {jobData.company}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-shrink-0">
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <img
-                      src={jobData.logo || "/placeholder.svg"}
-                      alt={`${jobData.company} logo`}
-                      className="w-24 h-24 object-contain"
-                    />
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Job Overview</h2>
+
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <DollarSign className="w-5 h-5 mr-3 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Salary
+                    </p>
+                    <p className="font-medium">{job.jobSalary}</p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-gray-700 mb-4">
-                    TechCorp Solutions is a leading technology company
-                    specializing in building innovative web and mobile
-                    applications. With a team of over 200 talented
-                    professionals, we've been helping businesses transform their
-                    digital presence since 2010.
-                  </p>
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center gap-2">
-                      <Building className="h-5 w-5 text-gray-500" />
-                      <span>200+ employees</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-5 w-5 text-gray-500" />
-                      <span>techcorpsolutions.com</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-gray-500" />
-                      <span>San Francisco, CA</span>
-                    </div>
+
+                <div className="flex items-start">
+                  <Briefcase className="w-5 h-5 mr-3 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Job Type
+                    </p>
+                    <p className="font-medium">{job.jobType}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <MapPin className="w-5 h-5 mr-3 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Location
+                    </p>
+                    <p className="font-medium">{job.jobLocation}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Award className="w-5 h-5 mr-3 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Experience
+                    </p>
+                    <p className="font-medium">
+                      {job.jobExperienceRequired}+ years
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Clock className="w-5 h-5 mr-3 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Work Days
+                    </p>
+                    <p className="font-medium">
+                      {job.jobWorkDays} days per week
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Calendar className="w-5 h-5 mr-3 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Application Deadline
+                    </p>
+                    <p className="font-medium">{formatDate(job.jobDeadline)}</p>
                   </div>
                 </div>
               </div>
+
+              <Separator className="my-6" />
+
+              <Button
+                className="w-full"
+                onClick={handleJobApply}
+                disabled={jobApplied}
+              >
+                {jobApplied ? "Applied" : applying ? "applying" : "Apply Now"}
+              </Button>
             </CardContent>
           </Card>
-        </motion.div>
 
-        {/* Similar Jobs Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.5 }}
-          className="mb-12"
-        >
-          <h2 className="text-2xl font-bold mb-4">Similar Jobs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="cursor-pointer"
-              >
-                <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white rounded-lg p-1 shadow-sm">
-                        <img
-                          src="/placeholder.svg?height=40&width=40"
-                          alt="Company logo"
-                          className="w-10 h-10 object-contain"
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">
-                          Frontend Developer
-                        </CardTitle>
-                        <CardDescription>InnoTech Inc.</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <div className="flex items-center gap-1 text-sm">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span>Remote</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm">
-                        <DollarSign className="h-4 w-4 text-gray-500" />
-                        <span>$90k-$120k</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      We're looking for a talented Frontend Developer to join
-                      our team and help build amazing user experiences.
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Company Info</h2>
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                    <Building className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{job.jobCompany}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {job.jobLocation}
                     </p>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <Badge variant="outline" className="text-xs">
-                      Posted 3 days ago
-                    </Badge>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {job.isPostedByCollege
+                    ? "This job is posted by the college and the firm is looking for talented professionals."
+                    : "This job is posted by an alumni working in this company looking for talented professionals."}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Applications</h2>
+                  <Badge variant="outline">{job.applied.length}</Badge>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {job.applied.length > 0
+                    ? `${job.applied.length} candidates have applied to this position.`
+                    : "Be the first to apply to this position!"}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
-      </div>
-    </div>
+      </motion.div>
+
+      <motion.div
+        className="mt-8 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          Job ID: {id} • Posted on {formatDate(job.createdAt)}
+        </p>
+      </motion.div>
+    </motion.div>
   );
 }

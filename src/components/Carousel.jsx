@@ -111,8 +111,12 @@ const Carousel = ({ type, data, action }) => {
               {type === "internship" && (
                 <InternshipCard internship={item} action={action} />
               )}
-              {type === "mentor" && <MentorCard mentor={item} />}
-              {type === "webinar" && <WebinarCard event={item} />}
+              {type === "mentor" && (
+                <MentorCard mentor={item} action={action} />
+              )}
+              {type === "webinar" && (
+                <WebinarCard event={item} action={action} />
+              )}
             </motion.div>
           ))}
         </motion.div>
