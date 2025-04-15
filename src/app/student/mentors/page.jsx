@@ -32,54 +32,98 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import MentorCard from "@/components/Mentor-Card";
 
 // Sample alumni data
-const alumniData = [
+const mentorData = [
   {
-    id: 1,
-    name: "Ajudiya Keyur",
-    classOf: "2024",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    fullName: "Siddharth Malhotra",
+    rating: 4.8,
+    profileImage: "https://randomuser.me/api/portraits/men/22.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
+    profileHeadline:
+      "Senior Software Engineer @ Google | System Design Mentor",
+    isAvailable: true,
   },
   {
-    id: 2,
-    name: "Arpit Dhameliya",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    fullName: "Ayesha Raza",
+    rating: 4.6,
+    profileImage: "https://randomuser.me/api/portraits/women/33.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d",
+    profileHeadline: "Data Scientist @ Amazon | ML, AI Guide",
+    isAvailable: true,
   },
   {
-    id: 3,
-    name: "Dhaval A",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    fullName: "Nikhil Raj",
+    rating: 4.9,
+    profileImage: "https://randomuser.me/api/portraits/men/45.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61",
+    profileHeadline: "DevOps Engineer @ Microsoft | AWS & CI/CD Mentor",
+    isAvailable: false,
   },
   {
-    id: 4,
-    name: "Dhyey Ladani",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    fullName: "Ira Chopra",
+    rating: 4.7,
+    profileImage: "https://randomuser.me/api/portraits/women/50.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1485217988980-11786ced9454",
+    profileHeadline: "UI/UX Designer @ Adobe | Portfolio & Design Thinking",
+    isAvailable: true,
   },
   {
-    id: 5,
-    name: "Dipesh Mali",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    fullName: "Tushar Meena",
+    rating: 4.5,
+    profileImage: "https://randomuser.me/api/portraits/men/60.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1522199710521-72d69614c702",
+    profileHeadline: "Product Manager @ Swiggy | Agile & PM Career Coach",
+    isAvailable: false,
   },
   {
-    id: 6,
-    name: "Divya Kaurani",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    fullName: "Divya Shetty",
+    rating: 4.9,
+    profileImage: "https://randomuser.me/api/portraits/women/65.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1532614338840-ab30cf10ed36",
+    profileHeadline: "Cloud Architect @ IBM | Azure & DevSecOps",
+    isAvailable: true,
+  },
+  {
+    fullName: "Arjun Desai",
+    rating: 4.4,
+    profileImage: "https://randomuser.me/api/portraits/men/73.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f",
+    profileHeadline:
+      "Cybersecurity Analyst @ Infosys | Ethical Hacking Mentor",
+    isAvailable: true,
+  },
+  {
+    fullName: "Pooja Bhatt",
+    rating: 4.6,
+    profileImage: "https://randomuser.me/api/portraits/women/76.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    profileHeadline: "Full Stack Developer @ Zoho | MERN Stack Guide",
+    isAvailable: false,
+  },
+  {
+    fullName: "Vivek Chauhan",
+    rating: 4.8,
+    profileImage: "https://randomuser.me/api/portraits/men/88.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1507537297725-24a1c029d3ca",
+    profileHeadline: "AI/ML Engineer @ TCS Research | Deep Learning Mentor",
+    isAvailable: true,
+  },
+  {
+    fullName: "Meghna Singh",
+    rating: 4.7,
+    profileImage: "https://randomuser.me/api/portraits/women/81.jpg",
+    coverImage:
+      "https://images.unsplash.com/photo-1519340333755-56e9cbbc3b40",
+    profileHeadline: "Business Analyst @ Deloitte | Interview Prep Coach",
+    isAvailable: true,
   },
 ];
 
@@ -402,9 +446,9 @@ export default function MentorsPage() {
             >
               {/* Alumni Cards Grid */}
               <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {alumniData.map((alumni, index) => (
+                {mentorData.map((mentor, index) => (
                   <div key={index} className="flex justify-center">
-                    <MentorCard />
+                    <MentorCard mentor={mentor} />
                   </div>
                 ))}
               </div>

@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Briefcase,
-  Building2,
-  Calendar,
-  
-  HandCoins,
- 
-} from "lucide-react";
+import { Briefcase, Building2, Calendar, HandCoins } from "lucide-react";
 import { Label } from "./ui/label";
 const InternshipCard = ({ internship }) => {
   return (
@@ -28,7 +21,7 @@ const InternshipCard = ({ internship }) => {
           </div>
           <div className="ml-4">
             <h2 className="text-xl font-semibold text-blue-600">
-              {internship.role}
+              {internship.title}
             </h2>
             <div className="flex items-center text-gray-500 text-sm">
               <Building2 className="w-4 h-4 mr-1" />
@@ -40,7 +33,9 @@ const InternshipCard = ({ internship }) => {
           <div className="flex items-center col-span-2">
             <Briefcase className="w-5 h-5 text-pink-500 mr-2" />
             <div>
-              <p className="text-gray-500 text-sm">{internship.type}</p>
+              <p className="text-gray-500 text-sm">
+                {internship.internshipType}
+              </p>
             </div>
           </div>
           <div className="flex items-center col-span-2">

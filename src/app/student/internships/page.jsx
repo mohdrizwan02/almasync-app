@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Filter } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+
 import {
   Select,
   SelectContent,
@@ -16,66 +11,229 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 import InternshipCard from "@/components/Internship-Card";
 
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+const internshipLocations = [
+  { id: 1, name: "Delhi" },
+  { id: 2, name: "Bangalore" },
+  { id: 3, name: "Chennai" },
+  { id: 4, name: "Pune" },
+];
+
+const internshipTypes = [
+  { id: 1, name: "Remote" },
+  { id: 2, name: "Hybrid" },
+  { id: 3, name: "Work From Home" },
+];
+
+const internshipTimings = [
+  { id: 1, name: "Full-time" },
+  { id: 2, name: "Part-time" },
+];
+
+// Reusable Dropdown Component
+function FilterDropdown({
+  label,
+  data,
+  selected,
+  setSelected,
+  search,
+  setSearch,
+}) {
+  const toggleSelection = (item) => {
+    if (selected.includes(item)) {
+      setSelected(selected.filter((i) => i !== item));
+    } else {
+      setSelected([...selected, item]);
+    }
+  };
+
+  const filtered = data.filter((d) =>
+    d.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="max-w-80">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="w-full justify-between">
+            {selected.length > 0
+              ? `${selected.length} selected`
+              : `Select ${label}`}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-full p-4 space-y-3">
+          <Input
+            placeholder={`Search ${label.toLowerCase()}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <ScrollArea className="h-48 pr-2">
+            {filtered.map((item) => (
+              <div key={item.id} className="flex items-center space-x-2 py-1">
+                <Checkbox
+                  id={`${label}-${item.id}`}
+                  checked={selected.includes(item.name)}
+                  onCheckedChange={() => toggleSelection(item.name)}
+                />
+                <label htmlFor={`${label}-${item.id}`} className="text-sm">
+                  {item.name}
+                </label>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-center text-muted-foreground text-sm mt-4">
+                No {label.toLowerCase()} found.
+              </div>
+            )}
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 // Sample alumni data
-const alumniData = [
+const internshipData = [
   {
-    id: 1,
-    name: "Ajudiya Keyur",
-    classOf: "2024",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    role: "Frontend Developer Intern",
+    company: "TechNova Solutions",
+    type: "Remote",
+    duration: "3 months",
+    stipend: "₹10,000/month",
+    skills: ["HTML", "CSS", "JavaScript", "React"],
+    postedDaysAgo: 2,
+    isActive: true,
   },
   {
-    id: 2,
-    name: "Arpit Dhameliya",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    role: "Data Science Intern",
+    company: "DataWiz Analytics",
+    type: "Onsite",
+    duration: "6 months",
+    stipend: "₹15,000/month",
+    skills: ["Python", "Pandas", "Machine Learning", "SQL"],
+    postedDaysAgo: 5,
+    isActive: true,
   },
   {
-    id: 3,
-    name: "Dhaval A",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    role: "Backend Developer Intern",
+    company: "CodeCrafter Labs",
+    type: "Hybrid",
+    duration: "4 months",
+    stipend: "₹12,000/month",
+    skills: ["Node.js", "Express", "MongoDB", "REST API"],
+    postedDaysAgo: 12,
+    isActive: false,
   },
   {
-    id: 4,
-    name: "Dhyey Ladani",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    role: "UI/UX Designer Intern",
+    company: "PixelWorks Studio",
+    type: "Remote",
+    duration: "2 months",
+    stipend: "₹8,000/month",
+    skills: ["Figma", "Adobe XD", "User Research", "Wireframing"],
+    postedDaysAgo: 1,
+    isActive: true,
   },
   {
-    id: 5,
-    name: "Dipesh Mali",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    role: "Cybersecurity Intern",
+    company: "SecureNet Pvt Ltd",
+    type: "Onsite",
+    duration: "3 months",
+    stipend: "₹10,000/month",
+    skills: ["Network Security", "Linux", "Ethical Hacking", "Nmap"],
+    postedDaysAgo: 20,
+    isActive: false,
   },
   {
-    id: 6,
-    name: "Divya Kaurani",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    role: "Cloud Engineering Intern",
+    company: "CloudMorph Technologies",
+    type: "Remote",
+    duration: "5 months",
+    stipend: "₹18,000/month",
+    skills: ["AWS", "Docker", "Kubernetes", "Terraform"],
+    postedDaysAgo: 3,
+    isActive: true,
+  },
+  {
+    role: "Digital Marketing Intern",
+    company: "BuzzReach Media",
+    type: "Hybrid",
+    duration: "3 months",
+    stipend: "₹7,000/month",
+    skills: ["SEO", "Google Ads", "Content Writing", "Analytics"],
+    postedDaysAgo: 7,
+    isActive: true,
+  },
+  {
+    role: "Mobile App Developer Intern",
+    company: "Appify Inc.",
+    type: "Onsite",
+    duration: "4 months",
+    stipend: "₹14,000/month",
+    skills: ["Flutter", "Dart", "Firebase", "UI Design"],
+    postedDaysAgo: 10,
+    isActive: true,
+  },
+  {
+    role: "Business Analyst Intern",
+    company: "InnoConsult Global",
+    type: "Remote",
+    duration: "2 months",
+    stipend: "₹9,000/month",
+    skills: ["Excel", "Power BI", "SQL", "Communication"],
+    postedDaysAgo: 15,
+    isActive: false,
+  },
+  {
+    role: "Machine Learning Intern",
+    company: "AIBridge Tech",
+    type: "Hybrid",
+    duration: "6 months",
+    stipend: "₹20,000/month",
+    skills: ["Python", "Scikit-learn", "Deep Learning", "TensorFlow"],
+    postedDaysAgo: 4,
+    isActive: true,
   },
 ];
 
 export default function InternshipsPage() {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [sortBy, setSortBy] = useState("recent");
+  const [selectedLocation, setSelectedLocation] = useState([]);
+  const [selectedType, setSelectedType] = useState([]);
+  const [selectedTiming, setSelectedTiming] = useState([]);
+
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchType, setSearchType] = useState("");
+  const [searchTiming, setSearchTiming] = useState("");
+
+  const resetFilters = () => {
+    setSelectedLocation([]);
+    setSelectedType([]);
+    setSelectedTiming([]);
+    setSearchLocation("");
+    setSearchType("");
+    setSearchTiming("");
+  };
 
   return (
     <>
@@ -192,99 +350,49 @@ export default function InternshipsPage() {
               transition={{ delay: 0.4 }}
             >
               <Accordion type="single" collapsible>
-                <AccordionItem value="filters" className="border-none">
+                <AccordionItem
+                  value="internship-filters"
+                  className="border-none"
+                >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center text-gray-700">
                       <Filter className="h-5 w-5 mr-2 text-indigo-600" />
-                      <span className="font-medium">Advanced Filters</span>
+                      <span className="font-medium">Internship Filters</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Department
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="be">
-                              Bachelor of Engineering
-                            </SelectItem>
-                            <SelectItem value="btech">
-                              Bachelor of Technology
-                            </SelectItem>
-                            <SelectItem value="mtech">
-                              Master of Technology
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Graduation Year
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select degree" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">2025</SelectItem>
-                            <SelectItem value="2024">2024</SelectItem>
-                            <SelectItem value="2023">2023</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Degree
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select field" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cs">BTECH</SelectItem>
-                            <SelectItem value="it">MTECH</SelectItem>
-                            <SelectItem value="ce">MBA</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Current Company
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">company 1</SelectItem>
-                            <SelectItem value="2024">company 2</SelectItem>
-                            <SelectItem value="2023">company 3</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Location
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">location 1</SelectItem>
-                            <SelectItem value="2024">location 2</SelectItem>
-                            <SelectItem value="2023">location 3</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <FilterDropdown
+                        label="Location"
+                        data={internshipLocations}
+                        selected={selectedLocation}
+                        setSelected={setSelectedLocation}
+                        search={searchLocation}
+                        setSearch={setSearchLocation}
+                      />
+                      <FilterDropdown
+                        label="Work Type"
+                        data={internshipTypes}
+                        selected={selectedType}
+                        setSelected={setSelectedType}
+                        search={searchType}
+                        setSearch={setSearchType}
+                      />
+                      <FilterDropdown
+                        label="Timing"
+                        data={internshipTimings}
+                        selected={selectedTiming}
+                        setSelected={setSelectedTiming}
+                        search={searchTiming}
+                        setSearch={setSearchTiming}
+                      />
                     </div>
                     <div className="mt-4 flex justify-end">
-                      <Button variant="outline" className="mr-2">
+                      <Button
+                        variant="outline"
+                        className="mr-2"
+                        onClick={resetFilters}
+                      >
                         Reset
                       </Button>
                       <Button>Apply Filters</Button>
@@ -328,9 +436,9 @@ export default function InternshipsPage() {
             >
               {/* Alumni Cards Grid */}
               <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {alumniData.map((alumni, index) => (
+                {internshipData.map((internship, index) => (
                   <div key={index} className="flex justify-center">
-                    <InternshipCard />
+                    <InternshipCard internship={internship} />
                   </div>
                 ))}
               </div>

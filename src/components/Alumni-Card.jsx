@@ -14,7 +14,7 @@ const AlumniCard = ({ alumni }) => {
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
-      className="bg-white rounded-xl px-4 py-6 shadow-md cursor-pointer w-72 sm:w-86 sm:h-90 h-98 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
+      className="bg-white rounded-xl px-4 py-6 shadow-md cursor-pointer w-72 sm:w-86  h-98 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center mb-4">
@@ -22,7 +22,7 @@ const AlumniCard = ({ alumni }) => {
             <div className="w-16 h-16 rounded-2xl bg-red-100 overflow-hidden relative">
               <img
                 src={alumni.profileImage}
-                alt="Gaurav Tiwari"
+                alt={alumni.fullName}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -53,7 +53,7 @@ const AlumniCard = ({ alumni }) => {
                 <GraduationCap className="w-4 h-4 mr-1" />
                 <span>{alumni.department}</span>
               </div>
-              <p>{alumni.passoutBatch} Batch</p>
+              <p>{alumni.batch} Batch</p>
             </div>
           </div>
         </div>
@@ -62,25 +62,33 @@ const AlumniCard = ({ alumni }) => {
           <div className="flex items-center">
             <Briefcase className="w-5 h-5 text-blue-500 mr-2" />
             <div>
-              <p className="text-gray-800">{alumni.role}</p>
+              <p className="text-gray-800">
+                {alumni.role ? alumni.role : "xyz role"}
+              </p>
             </div>
           </div>
           <div className="flex items-center">
             <MapPin className="w-5 h-5 text-purple-500 mr-2" />
             <div>
-              <p className="text-gray-800">{alumni.location}</p>
+              <p className="text-gray-800">
+                {alumni.location ? alumni.location : "xyz location"}
+              </p>
             </div>
           </div>
           <div className="flex items-center">
             <Building2 className="w-5 h-5 text-gray-600 mr-2" />
             <div>
-              <p className="text-gray-800">{alumni.company}</p>
+              <p className="text-gray-800">
+                {alumni.company ? alumni.company : "xyz company"}
+              </p>
             </div>
           </div>
           <div className="flex items-center">
             <Clock className="w-5 h-5 text-yellow-500 mr-2" />
             <div>
-              <p className="text-gray-800">{alumni.experience}</p>
+              <p className="text-gray-800">
+                {alumni.experience ? alumni.experience : "xyz experience"}
+              </p>
             </div>
           </div>
         </div>

@@ -39,6 +39,10 @@ const StudentProfileSchema = new mongoose.Schema(
       type: String,
     },
 
+    profileHeadline:{
+      type:String
+    },
+
     gender: {
       type: String,
       enum: ["male", "female", "other"],

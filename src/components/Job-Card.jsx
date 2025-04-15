@@ -28,7 +28,7 @@ const JobCard = ({ job }) => {
             />
           </div>
           <div className="ml-4">
-            <h2 className="text-xl font-semibold text-blue-600">{job.role}</h2>
+            <h2 className="text-xl font-semibold text-blue-600">{job.title}</h2>
             <div className="flex items-center text-gray-500 text-sm">
               <Building2 className="w-4 h-4 mr-1" />
               <span>{job.company}</span>
@@ -51,7 +51,7 @@ const JobCard = ({ job }) => {
           <div className=" col-span-2 flex items-center">
             <Briefcase className="w-5 h-5 text-red-400 mr-2" />
             <div>
-              <p className="text-gray-500 text-sm">{job.type}</p>
+              <p className="text-gray-500 text-sm">{job.jobType}</p>
             </div>
           </div>
         </div>

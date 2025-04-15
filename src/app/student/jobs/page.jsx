@@ -2,13 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, ArrowUpRight, Phone } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Search, Filter } from "lucide-react";
+
 import {
   Select,
   SelectContent,
@@ -16,67 +11,240 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import AlumniCard from "@/components/Alumni-Card";
+
 import JobCard from "@/components/Job-Card";
 
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Sample data
+const locations = [
+  { id: 1, name: "Delhi" },
+  { id: 2, name: "Mumbai" },
+  { id: 3, name: "Bangalore" },
+  { id: 4, name: "Hyderabad" },
+];
+
+const workTypes = [
+  { id: 1, name: "Remote" },
+  { id: 2, name: "Hybrid" },
+  { id: 3, name: "Work From Home" },
+];
+
+const jobTimings = [
+  { id: 1, name: "Full-time" },
+  { id: 2, name: "Part-time" },
+];
+
+// Reusable dropdown
+function FilterDropdown({
+  label,
+  data,
+  selected,
+  setSelected,
+  search,
+  setSearch,
+}) {
+  const handleChange = (item) => {
+    if (selected.includes(item)) {
+      setSelected(selected.filter((val) => val !== item));
+    } else {
+      setSelected([...selected, item]);
+    }
+  };
+
+  const filtered = data.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="max-w-80">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="w-full justify-between">
+            {selected.length > 0
+              ? `${selected.length} selected`
+              : `Select ${label}`}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-full p-4 space-y-3">
+          <Input
+            placeholder={`Search ${label.toLowerCase()}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <ScrollArea className="h-48 pr-2">
+            {filtered.map((item) => (
+              <div key={item.id} className="flex items-center space-x-2 py-1">
+                <Checkbox
+                  id={`${label}-${item.id}`}
+                  checked={selected.includes(item.name)}
+                  onCheckedChange={() => handleChange(item.name)}
+                />
+                <label htmlFor={`${label}-${item.id}`} className="text-sm">
+                  {item.name}
+                </label>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-center text-muted-foreground text-sm mt-4">
+                No {label.toLowerCase()} found.
+              </div>
+            )}
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 // Sample alumni data
-const alumniData = [
+const jobData = [
   {
-    id: 1,
-    name: "Ajudiya Keyur",
-    classOf: "2024",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    role: "Software Engineer",
+    company: "Innovatech Systems",
+    type: "Remote",
+    experience: "1-3 years",
+    salary: "₹8-12 LPA",
+    location: "Bengaluru",
+    skills: ["JavaScript", "React", "Node.js", "REST API"],
+    postedDaysAgo: 3,
+    isActive: true,
   },
   {
-    id: 2,
-    name: "Arpit Dhameliya",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    role: "Data Analyst",
+    company: "Insight Analytics",
+    type: "Onsite",
+    experience: "0-2 years",
+    salary: "₹6-9 LPA",
+    location: "Mumbai",
+    skills: ["SQL", "Excel", "Tableau", "Python"],
+    postedDaysAgo: 5,
+    isActive: true,
   },
   {
-    id: 3,
-    name: "Dhaval A",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    role: "DevOps Engineer",
+    company: "CloudSphere Solutions",
+    type: "Hybrid",
+    experience: "2-4 years",
+    salary: "₹10-15 LPA",
+    location: "Hyderabad",
+    skills: ["AWS", "Docker", "CI/CD", "Linux"],
+    postedDaysAgo: 12,
+    isActive: false,
   },
   {
-    id: 4,
-    name: "Dhyey Ladani",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    role: "UI/UX Designer",
+    company: "DesignHive",
+    type: "Remote",
+    experience: "1-3 years",
+    salary: "₹5-8 LPA",
+    location: "Pune",
+    skills: ["Figma", "Adobe XD", "User Flows", "Prototyping"],
+    postedDaysAgo: 1,
+    isActive: true,
   },
   {
-    id: 5,
-    name: "Dipesh Mali",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Computer Engineering",
-    verified: true,
+    role: "Backend Developer",
+    company: "StackBuilt Tech",
+    type: "Onsite",
+    experience: "3-5 years",
+    salary: "₹12-18 LPA",
+    location: "Chennai",
+    skills: ["Java", "Spring Boot", "SQL", "Microservices"],
+    postedDaysAgo: 7,
+    isActive: true,
   },
   {
-    id: 6,
-    name: "Divya Kaurani",
-    classOf: "2025",
-    degree: "Bachelor of Engineering",
-    field: "Information Technology",
-    verified: true,
+    role: "Cybersecurity Analyst",
+    company: "SecureNet Corp",
+    type: "Hybrid",
+    experience: "2-4 years",
+    salary: "₹10-14 LPA",
+    location: "Delhi",
+    skills: ["Network Security", "Firewalls", "SIEM", "Python"],
+    postedDaysAgo: 15,
+    isActive: false,
+  },
+  {
+    role: "AI/ML Engineer",
+    company: "NeuronX Labs",
+    type: "Remote",
+    experience: "1-2 years",
+    salary: "₹14-20 LPA",
+    location: "Remote",
+    skills: ["Machine Learning", "TensorFlow", "Python", "NLP"],
+    postedDaysAgo: 2,
+    isActive: true,
+  },
+  {
+    role: "Product Manager",
+    company: "BrightBridge Tech",
+    type: "Onsite",
+    experience: "3-6 years",
+    salary: "₹18-25 LPA",
+    location: "Bengaluru",
+    skills: ["Agile", "JIRA", "Roadmapping", "Stakeholder Management"],
+    postedDaysAgo: 10,
+    isActive: true,
+  },
+  {
+    role: "Business Development Associate",
+    company: "SalesSprint",
+    type: "Remote",
+    experience: "0-1 year",
+    salary: "₹4-6 LPA + incentives",
+    location: "Remote",
+    skills: ["Communication", "CRM", "Sales", "Negotiation"],
+    postedDaysAgo: 4,
+    isActive: true,
+  },
+  {
+    role: "Quality Assurance Engineer",
+    company: "TestHive Pvt Ltd",
+    type: "Onsite",
+    experience: "1-2 years",
+    salary: "₹6-10 LPA",
+    location: "Kolkata",
+    skills: ["Manual Testing", "Selenium", "Test Cases", "Bug Tracking"],
+    postedDaysAgo: 9,
+    isActive: false,
   },
 ];
 
 export default function JobsPage() {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [sortBy, setSortBy] = useState("recent");
+  const [selectedLocation, setSelectedLocation] = useState([]);
+  const [selectedWorkType, setSelectedWorkType] = useState([]);
+  const [selectedTiming, setSelectedTiming] = useState([]);
+
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchType, setSearchType] = useState("");
+  const [searchTiming, setSearchTiming] = useState("");
+
+  const resetAll = () => {
+    setSelectedLocation([]);
+    setSelectedWorkType([]);
+    setSelectedTiming([]);
+    setSearchLocation("");
+    setSearchType("");
+    setSearchTiming("");
+  };
 
   return (
     <>
@@ -193,99 +361,46 @@ export default function JobsPage() {
               transition={{ delay: 0.4 }}
             >
               <Accordion type="single" collapsible>
-                <AccordionItem value="filters" className="border-none">
+                <AccordionItem value="job-filters" className="border-none">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center text-gray-700">
                       <Filter className="h-5 w-5 mr-2 text-indigo-600" />
-                      <span className="font-medium">Advanced Filters</span>
+                      <span className="font-medium">Job Filters</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Department
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="be">
-                              Bachelor of Engineering
-                            </SelectItem>
-                            <SelectItem value="btech">
-                              Bachelor of Technology
-                            </SelectItem>
-                            <SelectItem value="mtech">
-                              Master of Technology
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Graduation Year
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select degree" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">2025</SelectItem>
-                            <SelectItem value="2024">2024</SelectItem>
-                            <SelectItem value="2023">2023</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Degree
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select field" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cs">BTECH</SelectItem>
-                            <SelectItem value="it">MTECH</SelectItem>
-                            <SelectItem value="ce">MBA</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Current Company
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">company 1</SelectItem>
-                            <SelectItem value="2024">company 2</SelectItem>
-                            <SelectItem value="2023">company 3</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Location
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">location 1</SelectItem>
-                            <SelectItem value="2024">location 2</SelectItem>
-                            <SelectItem value="2023">location 3</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <FilterDropdown
+                        label="Location"
+                        data={locations}
+                        selected={selectedLocation}
+                        setSelected={setSelectedLocation}
+                        search={searchLocation}
+                        setSearch={setSearchLocation}
+                      />
+                      <FilterDropdown
+                        label="Work Type"
+                        data={workTypes}
+                        selected={selectedWorkType}
+                        setSelected={setSelectedWorkType}
+                        search={searchType}
+                        setSearch={setSearchType}
+                      />
+                      <FilterDropdown
+                        label="Job Timing"
+                        data={jobTimings}
+                        selected={selectedTiming}
+                        setSelected={setSelectedTiming}
+                        search={searchTiming}
+                        setSearch={setSearchTiming}
+                      />
                     </div>
                     <div className="mt-4 flex justify-end">
-                      <Button variant="outline" className="mr-2">
+                      <Button
+                        variant="outline"
+                        className="mr-2"
+                        onClick={resetAll}
+                      >
                         Reset
                       </Button>
                       <Button>Apply Filters</Button>
@@ -329,9 +444,9 @@ export default function JobsPage() {
             >
               {/* Alumni Cards Grid */}
               <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {alumniData.map((alumni, index) => (
+                {jobData.map((job, index) => (
                   <div key={index} className="flex justify-center">
-                    <JobCard />
+                    <JobCard job={job} />
                   </div>
                 ))}
               </div>

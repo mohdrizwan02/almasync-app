@@ -75,18 +75,18 @@ export async function POST(request, response) {
       throw new Error("error occurred while making student profile! try again");
     }
 
-    if (!emailResponse.success) {
-      return NextResponse.json(
-        {
-          message:
-            "student profile has been created successfully but failed to send email please manually verify your email after login",
-        },
+    // if (!emailResponse.success) {
+    //   return NextResponse.json(
+    //     {
+    //       message:
+    //         "student profile has been created successfully but failed to send email please manually verify your email after login",
+    //     },
 
-        {
-          status: 202,
-        }
-      );
-    }
+    //     {
+    //       status: 202,
+    //     }
+    //   );
+    // }
     return NextResponse.json(
       {
         message: "student profile has been created successfully",

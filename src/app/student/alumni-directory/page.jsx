@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, ArrowUpRight, Phone } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -16,10 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import AlumniCard from "@/components/Alumni-Card";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { Filter } from "lucide-react";
+import axios from "axios";
 
 const alumniData = [
   {
@@ -134,8 +138,70 @@ const alumniData = [
   },
 ];
 
-export default function AlumniDirectoryPage() {
+const departmentsData = [
+  "CSE",
+  "CSD",
+  "ECE",
+  "EEE",
+  "CIVIL",
+  "PHE",
+  "CHE",
+  "CSBS",
+];
 
+const graduationYearsData = ["2020", "2021", "2022", "2023", "2024", "2025"];
+
+const locationsData = ["Bangalore", "Delhi", "Mumbai", "Hyderabad", "Chennai"];
+
+const companiesData = ["Google", "Microsoft", "Amazon", "Infosys", "TCS"];
+
+export default function AlumniDirectoryPage() {
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [sortOption, setSortOption] = useState("");
+
+  const [alumniData, setAlumniData] = useState([]);
+  useEffect(() => {
+    axios
+      .get("/api/alumni/get-all-alumni", {
+        params: {
+          department: selectedDepartment,
+          batch: selectedBatch,
+          company: selectedCompany,
+          location: selectedLocation,
+          sortBy: sortOption,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        setAlumniData((prev) => response.data.alumniData);
+      })
+      .catch((error) => {});
+  }, [
+    selectedBatch,
+    selectedCompany,
+    selectedDepartment,
+    selectedLocation,
+    sortOption,
+  ]);
+
+  const resetFilters = () => {
+    setSelectedDepartment("");
+    setSelectedBatch("");
+    setSelectedLocation("");
+    setSelectedCompany("");
+  };
+
+  const applyFilters = () => {
+    console.log({
+      department: selectedDepartment,
+      batch: selectedBatch,
+      location: selectedLocation,
+      company: selectedCompany,
+    });
+  };
 
   return (
     <>
@@ -252,7 +318,7 @@ export default function AlumniDirectoryPage() {
               transition={{ delay: 0.4 }}
             >
               <Accordion type="single" collapsible>
-                <AccordionItem value="filters" className="border-none">
+                <AccordionItem value="alumni-filters" className="border-none">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center text-gray-700">
                       <Filter className="h-5 w-5 mr-2 text-indigo-600" />
@@ -260,94 +326,93 @@ export default function AlumniDirectoryPage() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {/* Department Filter */}
+                      <div>
+                        <label className="block mb-1 text-sm font-medium">
                           Department
                         </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
+                        <Select onValueChange={setSelectedDepartment}>
+                          <SelectTrigger className={"w-full max-w-72"}>
+                            <SelectValue placeholder="Select Department" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="be">
-                              Bachelor of Engineering
-                            </SelectItem>
-                            <SelectItem value="btech">
-                              Bachelor of Technology
-                            </SelectItem>
-                            <SelectItem value="mtech">
-                              Master of Technology
-                            </SelectItem>
+                            {departmentsData.map((dept) => (
+                              <SelectItem key={dept} value={dept}>
+                                {dept}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                      {/* Graduation Year Filter */}
+                      <div>
+                        <label className="block mb-1 text-sm font-medium">
                           Graduation Year
                         </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select degree" />
+                        <Select onValueChange={setSelectedBatch}>
+                          <SelectTrigger className={"w-full max-w-72"}>
+                            <SelectValue placeholder="Select Year" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="2025">2025</SelectItem>
-                            <SelectItem value="2024">2024</SelectItem>
-                            <SelectItem value="2023">2023</SelectItem>
+                            {graduationYearsData.map((year) => (
+                              <SelectItem key={year} value={year}>
+                                {year}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Degree
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select field" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cs">BTECH</SelectItem>
-                            <SelectItem value="it">MTECH</SelectItem>
-                            <SelectItem value="ce">MBA</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Current Company
-                        </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2025">company 1</SelectItem>
-                            <SelectItem value="2024">company 2</SelectItem>
-                            <SelectItem value="2023">company 3</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+
+                      {/* Location Filter */}
+                      <div>
+                        <label className="block mb-1 text-sm font-medium">
                           Location
                         </label>
-                        <Select className={"w-full"}>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
+                        <Select onValueChange={setSelectedLocation}>
+                          <SelectTrigger className={"w-full max-w-72"}>
+                            <SelectValue placeholder="Select Location" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="2025">location 1</SelectItem>
-                            <SelectItem value="2024">location 2</SelectItem>
-                            <SelectItem value="2023">location 3</SelectItem>
+                            {locationsData.map((loc) => (
+                              <SelectItem key={loc} value={loc}>
+                                {loc}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Company Filter */}
+                      <div>
+                        <label className="block mb-1 text-sm font-medium">
+                          Company
+                        </label>
+                        <Select onValueChange={setSelectedCompany}>
+                          <SelectTrigger className={"w-full max-w-72"}>
+                            <SelectValue placeholder="Select Company" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {companiesData.map((company) => (
+                              <SelectItem key={company} value={company}>
+                                {company}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
+
                     <div className="mt-4 flex justify-end">
-                      <Button variant="outline" className="mr-2">
+                      <Button
+                        variant="outline"
+                        className="mr-2"
+                        onClick={resetFilters}
+                      >
                         Reset
                       </Button>
-                      <Button>Apply Filters</Button>
+                      <Button onClick={applyFilters}>Apply Filters</Button>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -367,14 +432,14 @@ export default function AlumniDirectoryPage() {
               </div>
               <div className="flex items-center">
                 <span className="text-gray-600 mr-2">Sort by</span>
-                <Select defaultValue="recent">
+                <Select onValueChange={setSortOption}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="recent">Most Recent</SelectItem>
-                    <SelectItem value="name">Name</SelectItem>
-                    <SelectItem value="year">Graduation Year</SelectItem>
+
+                    <SelectItem value="batch">Graduation Year</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -390,7 +455,7 @@ export default function AlumniDirectoryPage() {
               <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {alumniData.map((alumni, index) => (
                   <div key={index} className="flex justify-center">
-                    <AlumniCard alumni={alumni}/>
+                    <AlumniCard alumni={alumni} />
                   </div>
                 ))}
               </div>

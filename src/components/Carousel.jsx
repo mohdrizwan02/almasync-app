@@ -21,7 +21,7 @@ const noScrollbarCSS = `
   }
 `;
 
-const Carousel = ({ type, data }) => {
+const Carousel = ({ type, data, action }) => {
   const carouselRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -101,10 +101,16 @@ const Carousel = ({ type, data }) => {
               className="flex-shrink-0"
               style={{ scrollSnapAlign: "start" }}
             >
-              {type === "job" && <JobCard job={item} />}
-              {type === "feature" && <FeatureCard feature={item} />}
-              {type === "alumni" && <AlumniCard alumni={item} />}
-              {type === "internship" && <InternshipCard internship={item} />}
+              {type === "job" && <JobCard job={item} action={action} />}
+              {type === "feature" && (
+                <FeatureCard feature={item} action={action} />
+              )}
+              {type === "alumni" && (
+                <AlumniCard alumni={item} action={action} />
+              )}
+              {type === "internship" && (
+                <InternshipCard internship={item} action={action} />
+              )}
               {type === "mentor" && <MentorCard mentor={item} />}
               {type === "webinar" && <WebinarCard event={item} />}
             </motion.div>

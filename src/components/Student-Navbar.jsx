@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -11,11 +11,14 @@ import {
   CircleUser,
   GraduationCap,
   Home,
+  LogOut,
   LucideBriefcaseBusiness,
+  Mail,
   Menu,
   MessageSquareText,
   PencilRuler,
   Search,
+  User,
   Users,
   Users2Icon,
 } from "lucide-react";
@@ -39,8 +42,24 @@ import {
 
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
+import axios from "axios";
 
 const Navbar = () => {
+  const router = useRouter();
+  const logout = async () => {
+    try {
+      console.log("logging out");
+
+      const response = await axios.get("/api/auth/logout");
+      console.log(response);
+      if (response.data.success) {
+        console.log(response.data.message);
+        router.push("/login");
+      }
+    } catch (error) {
+      console.log("error occurred while logging out try again");
+    }
+  };
   const navItems = [
     {
       name: "home",
@@ -80,7 +99,7 @@ const Navbar = () => {
   ];
 
   const pathname = usePathname();
-  const [searchTerm, setSearchTerm] = useState("");
+
   console.log(pathname);
 
   return (
@@ -141,15 +160,50 @@ const Navbar = () => {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/student/notifications">
-            <Bell className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
-          </Link>
-          <Link href="/student/messages">
-            <MessageSquareText className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
-          </Link>
-          <Link href="/student/profile">
-            <CircleUser className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <CircleUser className="w-6 h-6 cursor-pointer text-gray-700 hover:text-orange-500" />
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent className="w-48 mt-2">
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/alumni/profile"
+                  className="flex items-center gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/alumni/messages"
+                  className="flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  Messages
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/alumni/notifications"
+                  className="flex items-center gap-2"
+                >
+                  <Bell className="w-4 h-4" />
+                  Notifications
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={logout}
+                className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className={"lg:hidden m-0"}>

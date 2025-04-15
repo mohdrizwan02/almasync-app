@@ -31,10 +31,18 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isOnline:{
+        type:Boolean,
+        default: false,
+    },
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
+    },
 
-    verifyOtp:{
-      type:String,
-    }
+    verifyOtp: {
+      type: String,
+    },
   },
   {
     timestamps: true,

@@ -1,13 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { Building2, ArrowRight } from "lucide-react";
-const FeatureCard = ({ feature }) => {
+const FeatureCard = ({ feature, action }) => {
+  const router = useRouter();
   return (
     <motion.div
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
       className="bg-gray-100 rounded-xl p-6 shadow-md cursor-pointer sm:w-100 w-72 h-80  flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
+      onClick={() => router.push(`${action}/${feature.action}`)}
     >
       <div className="flex flex-col h-full">
         <div className="">
@@ -16,16 +19,17 @@ const FeatureCard = ({ feature }) => {
           >
             {feature.icon}
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">{feature.title}</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            {feature.title}
+          </h3>
           <p className="text-gray-600 mb-6">{feature.description}</p>
         </div>
         <div className="mt-auto">
-          <a
-            href="#"
+          <h1
             className={`flex items-center  ${feature.learnMoreColor} font-medium`}
           >
             Learn More <ArrowRight className="ml-1 h-4 w-4" />
-          </a>
+          </h1>
         </div>
       </div>
     </motion.div>

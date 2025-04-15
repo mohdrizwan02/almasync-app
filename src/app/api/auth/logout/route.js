@@ -17,7 +17,7 @@ export async function GET(request) {
       expires: new Date(),
       secure: true,
     });
-    response.cookies.set("role", "", {
+    response.cookies.set("userRole", "", {
       httpOnly: true,
       expires: new Date(),
       secure: true,

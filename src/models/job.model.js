@@ -1,69 +1,92 @@
 import mongoose from "mongoose";
 
-const JobSchema = new mongoose.Schema({
-  postedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-  },
-  jobTitle: {
-    type: String,
-    required: [true, "job title is required"],
-  },
-  jobCompany: {
-    type: String,
-    required: true,
-  },
-  jobLocation: {
-    type: String,
-    required: true,
-  },
+const JobSchema = new mongoose.Schema(
+  {
+    postedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+    isJobVerified: {
+      type: Boolean,
+      default: false,
+    },
 
-  // full-time part-time etc
-  jobType: {
-    type: String,
-  },
+    isPostedByCollege: {
+      type: Boolean,
+      default: false,
+    },
+    jobTitle: {
+      type: String,
+      required: [true, "job title is required"],
+    },
+    jobCompany: {
+      type: String,
+      required: true,
+    },
+    jobLocation: {
+      type: String,
+      required: true,
+    },
 
-  // onsite remote etc
-  jobWorkType: {
-    type: String,
-  },
-
-  jobDescription: {
-    type: String,
-  },
-  jobResponsibilities: [
-    {
+    // full-time part-time etc
+    jobType: {
       type: String,
     },
-  ],
-  jobQualification: [
-    {
-      type: String,
-    },
-  ],
-  jobEligibility: [
-    {
-      type: String,
-    },
-  ],
-  jobSkills: [
-    {
-      type: String,
-    },
-  ],
-  jobWorkDays: {
-    type: Number,
-  },
-  jobExperienceRequired: {
-    type: Number,
-  },
 
-  jobSalary: {
-    type: String,
+    // onsite remote etc
+    jobWorkType: {
+      type: String,
+    },
+
+    jobDescription: {
+      type: String,
+    },
+
+    jobResponsibilities: [
+      {
+        type: String,
+      },
+    ],
+    jobQualification: [
+      {
+        type: String,
+      },
+    ],
+    jobEligibility: [
+      {
+        type: String,
+      },
+    ],
+    jobSkills: [
+      {
+        type: String,
+      },
+    ],
+    jobWorkDays: {
+      type: Number,
+    },
+    jobExperienceRequired: {
+      type: Number,
+    },
+
+    jobSalary: {
+      type: String,
+    },
+    jobDeadline: {
+      type: Date,
+    },
+    applied: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+      },
+    ],
   },
-  jobDeadline: {
-    type: Date,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const JobModel = mongoose.models.jobs || mongoose.model("jobs", JobSchema);
+
+export default JobModel;

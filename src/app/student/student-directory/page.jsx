@@ -3,6 +3,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Filter } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
   Accordion,
   AccordionContent,
@@ -16,8 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 import StudentCard from "@/components/Student-Card";
 
@@ -27,8 +37,7 @@ const studentData = [
     fullName: "Aarav Sharma",
     profileHeadline: "Aspiring Software Engineer",
     profileImageUrl: "https://randomuser.me/api/portraits/men/10.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?coding,laptop",
+    profileCoverImageUrl: "https://source.unsplash.com/1600x400/?coding,laptop",
     department: "Computer Science",
     batch: 2022,
   },
@@ -106,15 +115,103 @@ const studentData = [
     fullName: "Pooja Deshmukh",
     profileHeadline: "Passionate Web Developer",
     profileImageUrl: "https://randomuser.me/api/portraits/women/91.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?frontend,html",
+    profileCoverImageUrl: "https://source.unsplash.com/1600x400/?frontend,html",
     department: "Computer Science",
     batch: 2023,
   },
 ];
 
+const departmentsData = [
+  { id: 1, name: "Engineering" },
+  { id: 2, name: "Marketing" },
+  { id: 3, name: "Finance" },
+  { id: 4, name: "HR" },
+];
+
+const graduationYearsData = [
+  { id: 1, name: "2020" },
+  { id: 2, name: "2021" },
+  { id: 3, name: "2022" },
+  { id: 4, name: "2023" },
+  { id: 5, name: "2024" },
+];
+
+function FilterDropdown({
+  label,
+  data,
+  selected,
+  setSelected,
+  search,
+  setSearch,
+}) {
+  const handleCheckboxChange = (item) => {
+    if (selected.includes(item)) {
+      setSelected(selected.filter((val) => val !== item));
+    } else {
+      setSelected([...selected, item]);
+    }
+  };
+
+  const filtered = data.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="max-w-80">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="w-full justify-between">
+            {selected.length > 0
+              ? `${selected.length} selected`
+              : `Select ${label}`}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-full p-4 space-y-3">
+          <Input
+            placeholder={`Search ${label.toLowerCase()}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <ScrollArea className="h-48 pr-2">
+            {filtered.map((item) => (
+              <div key={item.id} className="flex items-center space-x-2 py-1">
+                <Checkbox
+                  id={`${label}-${item.id}`}
+                  checked={selected.includes(item.name)}
+                  onCheckedChange={() => handleCheckboxChange(item.name)}
+                />
+                <label htmlFor={`${label}-${item.id}`} className="text-sm">
+                  {item.name}
+                </label>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-center text-muted-foreground text-sm mt-4">
+                No {label.toLowerCase()} found.
+              </div>
+            )}
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 export default function StudentDirectoryPage() {
- 
+  const [selectedDepartments, setSelectedDepartments] = useState([]);
+  const [selectedYears, setSelectedYears] = useState([]);
+  const [searchDept, setSearchDept] = useState("");
+  const [searchYear, setSearchYear] = useState("");
+
+  const resetFilters = () => {
+    setSelectedDepartments([]);
+    setSelectedYears([]);
+    setSearchDept("");
+    setSearchYear("");
+  };
   return (
     <>
       <div className="container mx-auto max-w-7xl md:px-5">
@@ -225,77 +322,43 @@ export default function StudentDirectoryPage() {
               transition={{ delay: 0.4 }}
             >
               <Accordion type="single" collapsible>
-                <AccordionItem value="filters" className="border-none">
+                <AccordionItem
+                  value="dept-batch-filters"
+                  className="border-none"
+                >
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center text-gray-700">
                       <Filter className="h-5 w-5 mr-2 text-indigo-600" />
-                      <span className="font-medium">Advanced Filters</span>
+                      <span className="font-medium">
+                        Department & Batch Filters
+                      </span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Department
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cs">Computer Science</SelectItem>
-                            <SelectItem value="it">
-                              Information Technology
-                            </SelectItem>
-                            <SelectItem value="ce">
-                              Computer Engineering
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Batch
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select degree" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="be">
-                              Bachelor of Engineering
-                            </SelectItem>
-                            <SelectItem value="btech">
-                              Bachelor of Technology
-                            </SelectItem>
-                            <SelectItem value="mtech">
-                              Master of Technology
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="max-w-80">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Degree
-                        </label>
-                        <Select>
-                          <SelectTrigger className={"w-full"}>
-                            <SelectValue placeholder="Select field" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cs">Computer Science</SelectItem>
-                            <SelectItem value="it">
-                              Information Technology
-                            </SelectItem>
-                            <SelectItem value="ce">
-                              Computer Engineering
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FilterDropdown
+                        label="Department"
+                        data={departmentsData}
+                        selected={selectedDepartments}
+                        setSelected={setSelectedDepartments}
+                        search={searchDept}
+                        setSearch={setSearchDept}
+                      />
+                      <FilterDropdown
+                        label="Graduation Year"
+                        data={graduationYearsData}
+                        selected={selectedYears}
+                        setSelected={setSelectedYears}
+                        search={searchYear}
+                        setSearch={setSearchYear}
+                      />
                     </div>
                     <div className="mt-4 flex justify-end">
-                      <Button variant="outline" className="mr-2">
+                      <Button
+                        variant="outline"
+                        className="mr-2"
+                        onClick={resetFilters}
+                      >
                         Reset
                       </Button>
                       <Button>Apply Filters</Button>

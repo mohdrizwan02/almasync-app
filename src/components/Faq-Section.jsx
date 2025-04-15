@@ -4,9 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
-export default function FAQSection() {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function FAQSection({ role }) {
   const [activeCategory, setActiveCategory] = useState("networking");
   const [expandedQuestions, setExpandedQuestions] = useState([]);
 
@@ -21,23 +22,7 @@ export default function FAQSection() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 flex flex-col">
       <div className="w-full max-w-6xl mx-auto">
-        {/* Search Bar */}
-        <div className="relative w-full max-w-3xl mx-auto mb-8">
-          <div className="relative flex items-center rounded-full bg-white shadow-sm border border-gray-100 overflow-hidden">
-            <Search className="absolute left-4 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search FAQs..."
-              className="w-full py-4 pl-12 pr-4 text-gray-700 bg-transparent outline-none"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Main Content */}
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Categories Sidebar */}
           <div className="w-full md:w-72 flex-shrink-0">
             <CategoryList
               activeCategory={activeCategory}
@@ -45,7 +30,6 @@ export default function FAQSection() {
             />
           </div>
 
-          {/* FAQ Content */}
           <div className="flex-1">
             <AnimatePresence mode="wait">
               <motion.div
@@ -60,6 +44,7 @@ export default function FAQSection() {
                   category={activeCategory}
                   isQuestionExpanded={isQuestionExpanded}
                   toggleQuestion={toggleQuestion}
+                  role={role}
                 />
               </motion.div>
             </AnimatePresence>
@@ -70,7 +55,6 @@ export default function FAQSection() {
   );
 }
 
-// Category List Component
 function CategoryList({ activeCategory, setActiveCategory }) {
   const categories = [
     {
@@ -296,7 +280,12 @@ function CategoryList({ activeCategory, setActiveCategory }) {
 }
 
 // Category Content Component
-function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
+function CategoryContent({
+  category,
+  isQuestionExpanded,
+  toggleQuestion,
+  role,
+}) {
   const categoryContent = {
     "getting-started": {
       title: "Getting Started",
@@ -326,7 +315,33 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
           id: "gs-1",
           question: "How do I join the alumni network?",
           answer:
-            "To join the alumni network, you need to complete the registration process on our alumni portal. Visit the registration page, fill in your details, and verify your email address. Once approved, you'll have full access to the alumni network features.",
+            "To join the alumni network, you need to complete the registration process on our  portal. Visit the registration page, fill in your details, and verify your email address. Once approved, you'll have full access to the alumni network features.",
+          icon: (
+            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 6C13.1 6 14 6.9 14 8C14 9.1 13.1 10 12 10C10.9 10 10 9.1 10 8C10 6.9 10.9 6 12 6Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M12 13C9.33 13 4 14.34 4 17V20H20V17C20 14.34 14.67 13 12 13ZM18 18H6V17.01C6.2 16.29 9.3 15 12 15C14.7 15 17.8 16.29 18 17V18Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          ),
+        },
+        {
+          id: "gs-2",
+          question: "How do I join the student network?",
+          answer:
+            "To join the alumni network, you need to complete the registration process on our  portal. Visit the registration page, fill in your details, and verify your email address. Once approved, you'll have full access to the alumni network features.",
           icon: (
             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
               <svg
@@ -373,12 +388,13 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
           </svg>
         </div>
       ),
+
       questions: [
         {
           id: "net-1",
-          question: "How can I find alumni in my industry?",
+          question: "How can I find alumni of my college?",
           answer:
-            "Use our advanced search filters to find alumni by industry, company, location, or graduation year. You can also join industry-specific groups and attend networking events.",
+            "navigate to alumni directory to find alumni by company, location, or graduation year. You can also join industry-specific groups and attend networking events.",
           icon: (
             <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
               <svg
@@ -396,15 +412,24 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
             </div>
           ),
           actions: [
-            { label: "Search Directory", icon: "search" },
-            { label: "Industry Groups", icon: "users" },
+            {
+              label: "alumni network",
+              icon: "users",
+              link: `/${role}/alumni-directory`,
+            },
+
+            {
+              label: "student network",
+              icon: "users",
+              link: `/${role}/student-directory`,
+            },
           ],
         },
         {
           id: "net-2",
-          question: "How do I request an introduction?",
+          question: "How can I find students of my college?",
           answer:
-            "To request an introduction to another alumni, navigate to their profile and click the 'Request Introduction' button. Fill out the form explaining why you'd like to connect, and our system will facilitate the introduction if they accept.",
+            "navigate to student directory to find students by department or graduation year.",
           icon: (
             <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
               <svg
@@ -415,42 +440,19 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 6C13.1 6 14 6.9 14 8C14 9.1 13.1 10 12 10C10.9 10 10 9.1 10 8C10 6.9 10.9 6 12 6Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M12 13C9.33 13 4 14.34 4 17V20H20V17C20 14.34 14.67 13 12 13ZM18 18H6V17.01C6.2 16.29 9.3 15 12 15C14.7 15 17.8 16.29 18 17V18Z"
+                  d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z"
                   fill="currentColor"
                 />
               </svg>
             </div>
           ),
-        },
-        {
-          id: "net-3",
-          question: "What are Alumni Circles?",
-          answer:
-            "Alumni Circles are interest-based groups that connect alumni with similar professional interests or backgrounds. Join a Circle to network with like-minded alumni, share resources, and participate in specialized discussions and events.",
-          icon: (
-            <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </div>
-          ),
+          actions: [
+            {
+              label: "student network",
+              icon: "users",
+              link: `/${role}/student-directory`,
+            },
+          ],
         },
       ],
     },
@@ -476,9 +478,9 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
       questions: [
         {
           id: "career-1",
-          question: "How do I post job opportunities?",
+          question: "How do I post job or internship opportunities?",
           answer:
-            "Verified alumni can post jobs through our dedicated portal. Click on 'Post a Job' in the Jobs section and follow the simple submission process.",
+            "Verified alumni can post jobs and internships through our dedicated portal. Click on 'Post a Job' or 'Post an Internship' below and follow the simple submission process.",
           icon: (
             <div className="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
               <svg
@@ -500,15 +502,23 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
             </div>
           ),
           actions: [
-            { label: "Post a Job", icon: "plus" },
-            { label: "Job Guidelines", icon: "file" },
+            {
+              label: "Post a Job",
+              icon: "plus",
+              link: `/${role}/jobs/add-job`,
+            },
+            {
+              label: "Post an Internship",
+              icon: "plus",
+              link: `/${role}/internships/add-internship`,
+            },
           ],
         },
         {
           id: "career-2",
-          question: "How does the referral system work?",
+          question: "How do I find job or internship opportunities?",
           answer:
-            "Our referral system allows alumni to refer qualified candidates for positions at their companies. To make a referral, navigate to the job listing and click 'Refer a Candidate'. The referred candidate will receive an email with instructions to apply, and the hiring team will be notified of your referral.",
+            "Verified alumni can post jobs or internships through our dedicated portal. you can view jobs posted by verified alumni and college in the Jobs section.",
           icon: (
             <div className="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
               <svg
@@ -519,12 +529,29 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M17.65 4.35L14.86 7.14C16.55 7.55 17.9 8.9 18.31 10.59L21.1 7.8C19.85 5.91 18.09 4.15 16.2 2.9L17.65 4.35ZM12.35 4.35C11.45 4.12 10.53 4 9.6 4C5.6 4 2.01 6.56 0.85 10.35C0.63 11.06 0.63 11.84 0.85 12.55C1.26 13.87 1.95 15.1 2.86 16.1L5.65 13.31C5.24 12.8 4.92 12.2 4.76 11.55C5.23 9.08 7.23 7.08 9.7 6.61C10.35 6.45 10.95 6.45 11.55 6.55L12.35 4.35ZM9.6 15C8.48 15 7.59 14.1 7.59 13C7.59 11.9 8.48 11 9.6 11C10.71 11 11.6 11.9 11.6 13C11.6 14.1 10.71 15 9.6 15ZM16.35 19.65L19.14 16.86C19.55 18.55 20.9 19.9 22.59 20.31L19.8 23.1C17.91 21.85 16.15 20.09 14.9 18.2L16.35 19.65Z"
+                  d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M17 12H12V7H10V12H7V14H10V19H12V14H17V12Z"
                   fill="currentColor"
                 />
               </svg>
             </div>
           ),
+          actions: [
+            {
+              label: "find a Job",
+              icon: "MoveUpRight",
+              link: `/${role}/jobs`,
+            },
+            ,
+            {
+              label: "find Internship",
+              icon: "MoveUpRight",
+              link: `/${role}/internships`,
+            },
+          ],
         },
       ],
     },
@@ -569,6 +596,14 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
               </svg>
             </div>
           ),
+          actions: [
+            {
+              label: "Browse events",
+              icon: "MoveUpRight",
+              link: `/${role}/webinars`,
+            },
+            ,
+          ],
         },
       ],
     },
@@ -619,6 +654,8 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
   };
 
   const content = categoryContent[category];
+
+  const router = useRouter();
 
   return (
     <div className="p-6">
@@ -681,6 +718,7 @@ function CategoryContent({ category, isQuestionExpanded, toggleQuestion }) {
                                   ? "bg-green-100 text-green-700"
                                   : "bg-blue-100 text-blue-700"
                             )}
+                            onClick={() => router.push(action.link)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
