@@ -1610,10 +1610,10 @@ function SkillsCertificationsForm({ allSkills, data, updateData }) {
   );
 }
 
-function PersonalInfoForm({ data, updateData }) {
-  const [about, setAbout] = useState(data.about[0] || "");
+function PersonalInfoForm({ locations, data, updateData }) {
   const profileInputRef = useRef(null);
   const coverInputRef = useRef(null);
+  const [locationOpen, setLocationOpen] = useState(false);
 
   const handleFileChange = (e, type) => {
     const file = e.target.files?.[0];
@@ -1752,8 +1752,10 @@ function PersonalInfoForm({ data, updateData }) {
         <Label htmlFor="about">About</Label>
         <Textarea
           id="about"
-          value={about}
-          onChange={(e) => setAbout(e.target.value)}
+          value={data.about}
+          onChange={(e) =>
+            updateData("personalInfo", { about: e.target.value })
+          }
           placeholder="Tell us about yourself"
           rows={4}
         />
@@ -1794,16 +1796,62 @@ function PersonalInfoForm({ data, updateData }) {
 
           <div className="space-y-2">
             <Label htmlFor="currentlyWorkingIn">Location</Label>
-            <Input
-              id="currentlyWorkingIn"
-              value={data.currentlyWorkingIn}
-              onChange={(e) =>
-                updateData("personalInfo", {
-                  currentlyWorkingIn: e.target.value,
-                })
-              }
-              placeholder="e.g., Technology, Healthcare"
-            />
+
+            <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+              <PopoverTrigger className="" asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={locationOpen}
+                  className="w-full max-w-72  justify-between"
+                >
+                  {data.currentlyWorkingIn !== ""
+                    ? locations.find(
+                        (location) => location === data.currentlyWorkingIn
+                      )
+                    : "Select location"}
+                  <ChevronsUpDown className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command className={"w-full"}>
+                  <CommandInput placeholder="Search locaion" className="h-9" />
+                  <CommandList className={""}>
+                    <CommandEmpty>No locations found.</CommandEmpty>
+                    <CommandGroup>
+                      {locations.map((location, index) => (
+                        <CommandItem
+                          key={index}
+                          value={location}
+                          onSelect={(currentValue) => {
+                            if (data.currentlyWorkingIn === currentValue) {
+                              updateData("personalInfo", {
+                                currentlyWorkingIn: "",
+                              });
+                            } else {
+                              updateData("personalInfo", {
+                                currentlyWorkingIn: currentValue,
+                              });
+                            }
+                            setLocationOpen(false);
+                          }}
+                        >
+                          {location}
+                          <Check
+                            className={cn(
+                              "ml-auto",
+                              data.currentlyWorkingIn === location
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
@@ -1935,6 +1983,7 @@ function PersonalInfoForm({ data, updateData }) {
 
 export default function ProfileUpdatePage() {
   const [pageLoad, setPageLoad] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [profileImage, setProfileImage] = useState();
   const [coverImage, setCoverImage] = useState();
@@ -1945,7 +1994,7 @@ export default function ProfileUpdatePage() {
     coverImage,
     profileImage,
     gender: "",
-    about: [],
+    about: "",
 
     currentlyWorkingIn: "",
     currentlyWorkingAt: "",
@@ -2015,9 +2064,25 @@ export default function ProfileUpdatePage() {
     },
   });
 
+  const [locations, setLocations] = useState([]);
+
   const [allSkills, setAllSkills] = useState([]);
 
   const totalSteps = 6;
+
+  useEffect(() => {
+    axios
+      .get("/api/get-locations")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setLocations((prev) => response.data.locationData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+  }, []);
 
   useEffect(() => {
     try {
@@ -2047,7 +2112,7 @@ export default function ProfileUpdatePage() {
       });
   }, []);
 
-  const updateFormData = (data) => {
+  const updateFormData = (section, data) => {
     setFormData((prev) => ({
       ...prev,
       ...data,
@@ -2135,7 +2200,7 @@ export default function ProfileUpdatePage() {
       formDataToSend.append("hobbies", JSON.stringify(formData.hobbies || []));
 
       const response = await axios.post(
-        "/api/alumni/update-profile-details",
+        "/api/alumni/complete-profile",
         formDataToSend,
         {
           headers: {
@@ -2168,7 +2233,13 @@ export default function ProfileUpdatePage() {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <PersonalInfoForm data={formData} updateData={updateFormData} />;
+        return (
+          <PersonalInfoForm
+            data={formData}
+            locations={locations}
+            updateData={updateFormData}
+          />
+        );
       case 2:
         return <EducationForm data={formData} updateData={updateFormData} />;
       case 3:
@@ -2203,7 +2274,11 @@ export default function ProfileUpdatePage() {
   return (
     <>
       {pageLoad ? (
-        <div className="">loading ....</div>
+        <div className="container mx-auto max-w-7xl md:px-5">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       ) : (
         <div className="container max-w-7xl mx-auto py-10 px-4 md:px-6">
           <motion.div

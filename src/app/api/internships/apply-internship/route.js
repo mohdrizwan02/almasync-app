@@ -1,17 +1,16 @@
-import dbConnect from "@/lib/dbConnect";
-import InternshipModel from "@/models/internship.model";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import JobModel from "@/models/job.model";
 
 import UserModel from "@/models/user.model";
-import { NextResponse } from "next/server";
-
-await dbConnect();
+import InternshipModel from "@/models/internship.model";
 
 export async function POST(request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
+
     if (!token) {
       return NextResponse.json(
         {
@@ -23,8 +22,11 @@ export async function POST(request) {
         }
       );
     }
+
     const decodedToken = jwt.verify(token, process.env.JWT_TOKEN_SECRET);
+
     const userId = decodedToken._id;
+
     const user = await UserModel.findById(userId);
 
     if (!user) {
@@ -38,42 +40,30 @@ export async function POST(request) {
         }
       );
     }
+    const reqBody = await request.json();
+    const { internshipId } = reqBody;
 
-    const internshipData = await request.json();
+    const internship = await InternshipModel.findById(internshipId);
 
-    if (internshipData.internshipWorkDays) {
-      internshipData.internshipWorkDays = Number(data.internshipWorkDays);
-    }
+    const applied = internship.applied;
 
-    if (internshipData.internshipExperienceRequired) {
-      internshipData.internshipExperienceRequired = Number(
-        data.internshipExperienceRequired
-      );
-    }
+    applied.push(userId);
 
-    internshipData.postedBy = user._id;
+    const newInternship = await InternshipModel.findByIdAndUpdate(
+      internshipId,
+      {
+        applied: applied,
+      },
+      {
+        new: true,
+      }
+    );
 
-    console.log(internshipData);
-
-    const internship = await InternshipModel.create(internshipData);
-
-    console.log(internship);
-
-    if (!internship) {
-      return NextResponse.json(
-        {
-          message: "error occurred while posting internship",
-          success: false,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
+    console.log(newInternship);
 
     return NextResponse.json(
       {
-        message: "internship has been successfully posted",
+        message: "internship has been successfully applied",
         success: true,
       },
       {
@@ -81,7 +71,6 @@ export async function POST(request) {
       }
     );
   } catch (error) {
-    console.log(error);
     return NextResponse.json(
       {
         message: "error occurred",

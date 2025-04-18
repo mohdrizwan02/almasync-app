@@ -1,12 +1,8 @@
-import dbConnect from "@/lib/dbConnect";
-import JobModel from "@/models/job.model";
+import alumniProfileModel from "@/models/alumniProfile.model";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-
-import UserModel from "@/models/user.model";
 import { NextResponse } from "next/server";
-
-await dbConnect();
+import UserModel from "@/models/user.model";
 
 export async function POST(request) {
   try {
@@ -23,56 +19,64 @@ export async function POST(request) {
         }
       );
     }
+
     const decodedToken = jwt.verify(token, process.env.JWT_TOKEN_SECRET);
+
     const userId = decodedToken._id;
-    const user = await UserModel.findById(userId);
+
+    const reqBody = await request.json();
+
+    const { alumniId } = reqBody;
+
+    console.log(alumniId);
+
+    let alumniProfileData = await alumniProfileModel.findOne({
+      alumni: alumniId,
+    });
+
+    if (!alumniProfileData) {
+      return NextResponse.json(
+        {
+          message: "unauthorized token",
+          success: false,
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    console.log(alumniProfileData);
+
+    const user = await UserModel.findById(userId).select(
+      "-password -role -verifyOtp"
+    );
 
     if (!user) {
       return NextResponse.json(
         {
-          message: "unauthorized request ::user not found",
+          message: "unauthorized token",
           success: false,
         },
         {
-          status: 404,
+          status: 401,
         }
       );
     }
 
-    const jobData = await request.json();
-
-    if (jobData.jobWorkDays) {
-      data.jobWorkDays = Number(data.jobWorkDays);
-    }
-
-    if (jobData.jobExperienceRequired) {
-      data.jobExperienceRequired = Number(data.jobExperienceRequired);
-    }
-
-    jobData.postedBy = user._id;
-
-    console.log(jobData);
-
-    const job = await JobModel.create(jobData);
-
-    console.log(job);
-
-    if (!job) {
-      return NextResponse.json(
-        {
-          message: "error occurred while posting job",
-          success: false,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
+    alumniProfileData = {
+      ...alumniProfileData.toObject(),
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      isOnline: user.isOnline,
+    };
 
     return NextResponse.json(
       {
-        message: "job has been successfully posted",
+        message: "successfully fetched the alumni data",
         success: true,
+        alumniProfileData: alumniProfileData,
       },
       {
         status: 200,
@@ -81,7 +85,7 @@ export async function POST(request) {
   } catch (error) {
     return NextResponse.json(
       {
-        message: "error occurred",
+        message: "error occured by the server",
         success: false,
       },
       {

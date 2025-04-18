@@ -162,15 +162,7 @@ export default function EditProfileModal({
             onChange={handleInputChange}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="enrollmentNumber">Enrollment Number</Label>
-          <Input
-            id="enrollmentNumber"
-            name="enrollmentNumber"
-            value={formData.enrollmentNumber || ""}
-            onChange={handleInputChange}
-          />
-        </div>
+
         <div className="space-y-2">
           <Label htmlFor="dateOfBirth">Date of Birth</Label>
           <Popover>
@@ -228,86 +220,7 @@ export default function EditProfileModal({
             onChange={handleInputChange}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="college">College</Label>
-          <Input
-            id="college"
-            name="college"
-            value={formData.college || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="degree">Degree</Label>
-          <Input
-            id="degree"
-            name="degree"
-            value={formData.degree || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="department">Department</Label>
-          <Input
-            id="department"
-            name="department"
-            value={formData.department || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="admissionYear">Admission Year</Label>
-          <Input
-            id="admissionYear"
-            name="admissionYear"
-            value={formData.admissionYear || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="passoutYear">Passout Year</Label>
-          <Input
-            id="passoutYear"
-            name="passoutYear"
-            value={formData.passoutYear || ""}
-            onChange={handleInputChange}
-          />
-        </div>
       </div>
-
-      <div className="space-y-2 mb-4">
-        <Label>Current Work</Label>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="currentlyWorkingIn">Industry</Label>
-            <Input
-              id="currentlyWorkingIn"
-              name="currentlyWorkingIn"
-              value={formData.currentlyWorkingIn || ""}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="currentlyWorkingAt">Company</Label>
-            <Input
-              id="currentlyWorkingAt"
-              name="currentlyWorkingAt"
-              value={formData.currentlyWorkingAt || ""}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="currentlyWorkingAs">Position</Label>
-            <Input
-              id="currentlyWorkingAs"
-              name="currentlyWorkingAs"
-              value={formData.currentlyWorkingAs || ""}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-      </div>
-
       <div className="space-y-2 mb-4">
         <Label>Address</Label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -367,27 +280,27 @@ export default function EditProfileModal({
           </div>
         </div>
       </div>
-    </>
-  );
 
-  const renderAboutForm = () => (
-    <>
       <div className="space-y-2 mb-4">
         <Label htmlFor="about">About Me</Label>
         <Textarea
           id="about"
           className="min-h-[150px]"
-          value={formData.about ? formData.about.join("\n\n") : ""}
+          value={formData.about}
           onChange={(e) => {
-            const paragraphs = e.target.value
-              .split("\n\n")
-              .filter((p) => p.trim());
-            setFormData((prev) => ({ ...prev, about: paragraphs }));
+            setFormData({
+              ...formData,
+              about: e.target.value,
+            });
           }}
           placeholder="Write a few paragraphs about yourself..."
         />
       </div>
+    </>
+  );
 
+  const renderAboutForm = () => (
+    <>
       <div className="space-y-2 mb-4">
         <Label>Skills</Label>
         <div className="flex gap-2 mb-2">

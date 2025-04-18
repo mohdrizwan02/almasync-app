@@ -39,11 +39,10 @@ const AlumniProfileSchema = new mongoose.Schema(
       enum: ["male", "female", "other"],
     },
 
-    about: [
-      {
-        type: String,
-      },
-    ],
+    about: {
+      type: String,
+    },
+
     skills: [
       {
         type: String,

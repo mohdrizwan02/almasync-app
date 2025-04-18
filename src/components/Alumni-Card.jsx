@@ -18,14 +18,16 @@ const AlumniCard = ({ alumni, action }) => {
       whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
       whileTap={{ scale: 0.95 }}
       className="bg-white rounded-xl px-4 py-6 shadow-md cursor-pointer w-72 sm:w-86  h-98 border-2 border-gray-200 flex flex-col justify-between transition-colors duration-300 hover:bg-gray-50"
-      onClick={() => router.push(`${action}/alumni-directory/${alumni.userId}`)}
+      onClick={() =>
+        router.push(`/${action}/alumni-directory/${alumni.userId}`)
+      }
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center mb-4">
           <div className="relative">
             <div className="w-16 h-16 rounded-2xl bg-red-100 overflow-hidden relative">
               <img
-                src={alumni.profileImage}
+                src={alumni.profileImage || "/bvrit-admin.png"}
                 alt={alumni.fullName}
                 className="w-full h-full object-cover"
               />

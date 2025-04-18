@@ -32,96 +32,6 @@ import {
 import StudentCard from "@/components/Student-Card";
 import axios from "axios";
 
-// Sample alumni data
-const studentData = [
-  {
-    fullName: "Aarav Sharma",
-    profileHeadline: "Aspiring Software Engineer",
-    profileImageUrl: "https://randomuser.me/api/portraits/men/10.jpg",
-    profileCoverImageUrl: "https://source.unsplash.com/1600x400/?coding,laptop",
-    department: "Computer Science",
-    batch: 2022,
-  },
-  {
-    fullName: "Meera Patel",
-    profileHeadline: "Machine Learning Enthusiast",
-    profileImageUrl: "https://randomuser.me/api/portraits/women/21.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?artificial-intelligence,technology",
-    department: "Information Technology",
-    batch: 2023,
-  },
-  {
-    fullName: "Rohan Mehta",
-    profileHeadline: "Backend Development Nerd",
-    profileImageUrl: "https://randomuser.me/api/portraits/men/31.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?backend,server",
-    department: "Electronics",
-    batch: 2021,
-  },
-  {
-    fullName: "Isha Singh",
-    profileHeadline: "Creative UI/UX Designer",
-    profileImageUrl: "https://randomuser.me/api/portraits/women/32.jpg",
-    profileCoverImageUrl: "https://source.unsplash.com/1600x400/?design,ui",
-    department: "Computer Science",
-    batch: 2024,
-  },
-  {
-    fullName: "Karan Verma",
-    profileHeadline: "Full-Stack Developer in the Making",
-    profileImageUrl: "https://randomuser.me/api/portraits/men/45.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?webdevelopment,code",
-    department: "Mechanical",
-    batch: 2022,
-  },
-  {
-    fullName: "Neha Gupta",
-    profileHeadline: "AI and Data Science Learner",
-    profileImageUrl: "https://randomuser.me/api/portraits/women/54.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?datascience,charts",
-    department: "Information Technology",
-    batch: 2021,
-  },
-  {
-    fullName: "Arjun Nair",
-    profileHeadline: "Cybersecurity Explorer",
-    profileImageUrl: "https://randomuser.me/api/portraits/men/67.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?cybersecurity,hacker",
-    department: "Computer Science",
-    batch: 2023,
-  },
-  {
-    fullName: "Tanya Roy",
-    profileHeadline: "Mobile App Developer",
-    profileImageUrl: "https://randomuser.me/api/portraits/women/70.jpg",
-    profileCoverImageUrl: "https://source.unsplash.com/1600x400/?mobile,apps",
-    department: "Electronics",
-    batch: 2024,
-  },
-  {
-    fullName: "Vivaan Joshi",
-    profileHeadline: "Cloud Computing Explorer",
-    profileImageUrl: "https://randomuser.me/api/portraits/men/82.jpg",
-    profileCoverImageUrl:
-      "https://source.unsplash.com/1600x400/?cloudcomputing,aws",
-    department: "Electrical",
-    batch: 2022,
-  },
-  {
-    fullName: "Pooja Deshmukh",
-    profileHeadline: "Passionate Web Developer",
-    profileImageUrl: "https://randomuser.me/api/portraits/women/91.jpg",
-    profileCoverImageUrl: "https://source.unsplash.com/1600x400/?frontend,html",
-    department: "Computer Science",
-    batch: 2023,
-  },
-];
-
 const departmentsData = [
   "CSE",
   "CSD",
@@ -131,9 +41,13 @@ const departmentsData = [
   "PHE",
   "CHE",
   "CSBS",
+  "CSM",
+  "AIDS",
+  "IT",
+  "MECH",
 ];
 
-const graduationYearsData = ["2020", "2021", "2022", "2023", "2024", "2025"];
+const graduationYearsData = ["2025", "2026", "2027", "2028"];
 
 export default function StudentDirectoryPage() {
   const [studentData, setStudentData] = useState();
@@ -189,7 +103,6 @@ export default function StudentDirectoryPage() {
               </div>
 
               <div className="container mx-auto px-4 relative z-10">
-                {/* View Insights Button */}
                 <div className="flex justify-end mb-6">
                   <Button
                     variant="secondary"
@@ -205,7 +118,6 @@ export default function StudentDirectoryPage() {
                   </Button>
                 </div>
 
-                {/* Main Content */}
                 <div className="text-center max-w-4xl mx-auto">
                   <motion.h1
                     className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
@@ -223,10 +135,9 @@ export default function StudentDirectoryPage() {
                     transition={{ duration: 0.5, delay: 0.1 }}
                   >
                     Connect with your growing community of college mates across
-                    in our college.
+                    your college.
                   </motion.p>
 
-                  {/* Stats */}
                   <motion.div
                     className="grid grid-cols-2 gap-4 max-w-lg mx-auto mb-12"
                     initial={{ y: 20, opacity: 0 }}
@@ -249,30 +160,11 @@ export default function StudentDirectoryPage() {
                       </div>
                     </div>
                   </motion.div>
-
-                  {/* Search Bar */}
-                  <motion.div
-                    className="relative max-w-2xl mx-auto"
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                  >
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder="Search studnets by name, batch number, department.."
-                        className="pl-10 pr-10 py-6 rounded-full bg-white/90 text-gray-800 w-full focus:ring-2 focus:ring-white"
-                      />
-                    </div>
-                  </motion.div>
                 </div>
               </div>
             </motion.section>
 
-            {/* Main Content */}
             <div className="container mx-auto px-4 py-8">
-              {/* Advanced Filters */}
               <motion.div
                 className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden"
                 initial={{ y: -10, opacity: 0 }}
@@ -289,7 +181,6 @@ export default function StudentDirectoryPage() {
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {/* Department Filter */}
                         <div>
                           <label className="block mb-1 text-sm font-medium">
                             Department
@@ -383,7 +274,6 @@ export default function StudentDirectoryPage() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                {/* Alumni Cards Grid */}
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {studentData.map((student, index) => (
                     <div key={index} className="flex justify-center">
@@ -426,7 +316,11 @@ export default function StudentDirectoryPage() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto max-w-7xl md:px-5">loading</div>
+        <div className="container mx-auto max-w-7xl md:px-5">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       )}
     </>
   );

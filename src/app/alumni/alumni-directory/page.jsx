@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -24,38 +24,79 @@ import { Input } from "@/components/ui/input";
 
 import { Filter } from "lucide-react";
 import axios from "axios";
-
-const departmentsData = [
-  "CSE",
-  "CSD",
-  "ECE",
-  "EEE",
-  "CIVIL",
-  "PHE",
-  "CHE",
-  "CSBS",
-  "CSM",
-  "AIDS",
-  "IT",
-  "MECH",
-];
-
-const graduationYearsData = ["2020", "2021", "2022", "2023", "2024", "2025"];
-
-const locationsData = ["Bangalore", "Delhi", "Mumbai", "Hyderabad", "Chennai"];
-
-const companiesData = ["Google", "Microsoft", "Amazon", "Infosys", "TCS"];
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 export default function AlumniDirectoryPage() {
   const [companies, setCompanies] = useState();
   const [cities, setCities] = useState();
+  const [locations, setLocations] = useState([]);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [totalAlumni, setTotalAlumni] = useState();
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState("");
-  const [sortOption, setSortOption] = useState("");
 
+  const [sortOption, setSortOption] = useState("");
+  const departmentsData = [
+    "CSE",
+    "CSD",
+    "ECE",
+    "EEE",
+    "CIVIL",
+    "PHE",
+    "CHE",
+    "CSBS",
+    "CSM",
+    "AIDS",
+    "IT",
+    "MECH",
+  ];
+
+  const graduationYearsData = [
+    "1996",
+    "1997",
+    "1998",
+    "1999",
+    "2000",
+    "2001",
+    "2002",
+    "2003",
+    "2004",
+    "2005",
+    "2006",
+    "2007",
+    "2008",
+    "2009",
+    "2010",
+    "2011",
+    "2012",
+    "2013",
+    "2014",
+    "2015",
+    "2016",
+    "2017",
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+  ];
   const [alumniData, setAlumniData] = useState();
 
   useEffect(() => {
@@ -64,7 +105,7 @@ export default function AlumniDirectoryPage() {
         params: {
           department: selectedDepartment,
           batch: selectedBatch,
-          company: selectedCompany,
+
           location: selectedLocation,
           sortBy: sortOption,
         },
@@ -81,19 +122,26 @@ export default function AlumniDirectoryPage() {
       .catch((error) => {
         console.log(error);
       });
-  }, [
-    selectedBatch,
-    selectedCompany,
-    selectedDepartment,
-    selectedLocation,
-    sortOption,
-  ]);
+  }, [selectedBatch, selectedDepartment, selectedLocation, sortOption]);
+
+  useEffect(() => {
+    axios
+      .get("/api/get-locations")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setLocations((prev) => response.data.locationData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+  }, []);
 
   const resetFilters = () => {
     setSelectedDepartment("");
     setSelectedBatch("");
     setSelectedLocation("");
-    setSelectedCompany("");
   };
 
   return (
@@ -101,14 +149,12 @@ export default function AlumniDirectoryPage() {
       {alumniData ? (
         <div className="container mx-auto max-w-7xl md:px-5">
           <div className="flex flex-col min-h-screen bg-gray-50">
-            {/* Hero Section */}
             <motion.section
               className="relative w-full bg-gradient-to-br from-indigo-950 to-indigo-800 text-white py-12 md:py-16 lg:py-20 overflow-hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Grid Background */}
               <div className="absolute inset-0 opacity-20">
                 <div className="h-full w-full grid grid-cols-12 grid-rows-12">
                   {Array.from({ length: 144 }).map((_, i) => (
@@ -191,9 +237,7 @@ export default function AlumniDirectoryPage() {
               </div>
             </motion.section>
 
-            {/* Main Content */}
             <div className="container mx-auto px-4 py-8">
-              {/* Advanced Filters */}
               <motion.div
                 className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden"
                 initial={{ y: -10, opacity: 0 }}
@@ -210,7 +254,6 @@ export default function AlumniDirectoryPage() {
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {/* Department Filter */}
                         <div>
                           <label className="block mb-1 text-sm font-medium">
                             Department
@@ -259,43 +302,70 @@ export default function AlumniDirectoryPage() {
                           <label className="block mb-1 text-sm font-medium">
                             Location
                           </label>
-                          <Select
-                            value={selectedLocation || undefined}
-                            onValueChange={setSelectedLocation}
+                          <Popover
+                            open={locationOpen}
+                            onOpenChange={setLocationOpen}
                           >
-                            <SelectTrigger className={"w-full max-w-72"}>
-                              <SelectValue placeholder="Select Location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {locationsData.map((loc) => (
-                                <SelectItem key={loc} value={loc}>
-                                  {loc}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Company Filter */}
-                        <div>
-                          <label className="block mb-1 text-sm font-medium">
-                            Company
-                          </label>
-                          <Select
-                            value={selectedCompany || undefined}
-                            onValueChange={setSelectedCompany}
-                          >
-                            <SelectTrigger className={"w-full max-w-72"}>
-                              <SelectValue placeholder="Select Company" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {companiesData.map((company) => (
-                                <SelectItem key={company} value={company}>
-                                  {company}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <PopoverTrigger className="" asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={locationOpen}
+                                className="w-full max-w-72  justify-between"
+                              >
+                                {selectedLocation !== ""
+                                  ? locations.find(
+                                      (location) =>
+                                        location === selectedLocation
+                                    )
+                                  : "Select location"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command className={"w-full"}>
+                                <CommandInput
+                                  placeholder="Search locaion"
+                                  className="h-9"
+                                />
+                                <CommandList className={""}>
+                                  <CommandEmpty>
+                                    No locations found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {locations.map((location, index) => (
+                                      <CommandItem
+                                        key={index}
+                                        value={location}
+                                        onSelect={(currentValue) => {
+                                          if (
+                                            selectedLocation === currentValue
+                                          ) {
+                                            setSelectedLocation((prev) => "");
+                                          } else {
+                                            setSelectedLocation(
+                                              (prev) => currentValue
+                                            );
+                                          }
+                                          setLocationOpen(false);
+                                        }}
+                                      >
+                                        {location}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto",
+                                            selectedLocation === location
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       </div>
 
@@ -352,7 +422,7 @@ export default function AlumniDirectoryPage() {
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {alumniData.map((alumni, index) => (
                     <div key={index} className="flex justify-center">
-                      <AlumniCard alumni={alumni} />
+                      <AlumniCard alumni={alumni} action={"alumni"} />
                     </div>
                   ))}
                 </div>
@@ -391,7 +461,11 @@ export default function AlumniDirectoryPage() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto max-w-7xl md:px-5">loading</div>
+        <div className="container mx-auto max-w-7xl md:px-5">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       )}
     </>
   );

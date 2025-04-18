@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Calendar } from "lucide-react";
+import { Calendar, Check, ChevronsUpDown, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,11 +33,54 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import axios from "axios";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 
 export default function AddInternshipPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [date, setDate] = useState();
+
+  const [locations, setLocations] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  const [skillOpen, setSkillOpen] = useState(false);
+  const [responsibility, setResponsibility] = useState("");
+  const [benifits, setBenifits] = useState("");
+  const [eligibility, setEligibility] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("/api/get-locations")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setLocations((prev) => response.data.locationData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+
+    axios
+      .get("/api/get-skills")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setSkills((prev) => response.data.skillData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -47,18 +90,16 @@ export default function AddInternshipPage() {
     internshipType: "",
     internshipWorkType: "",
     internshipDescription: "",
-    internshipDuration: "",
-    internshipResponsibilities: [""],
-    internshipQualification: [""],
-    internshipEligibility: [""],
-    internshipSkills: [""],
+    internshipResponsibilities: [],
+    internshipBenefits: [],
+    internshipEligibility: [],
+    internshipSkills: [],
     internshipWorkDays: "",
     internshipExperienceRequired: "",
     internshipSalary: "",
     internshipDeadline: null,
   });
 
-  // Handle input change for simple fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -67,35 +108,6 @@ export default function AddInternshipPage() {
     });
   };
 
-  // Handle array field changes
-  const handleArrayFieldChange = (field, index, value) => {
-    const updatedArray = [...formData[field]];
-    updatedArray[index] = value;
-    setFormData({
-      ...formData,
-      [field]: updatedArray,
-    });
-  };
-
-  // Add new item to array fields
-  const addArrayItem = (field) => {
-    setFormData({
-      ...formData,
-      [field]: [...formData[field], ""],
-    });
-  };
-
-  // Remove item from array fields
-  const removeArrayItem = (field, index) => {
-    const updatedArray = [...formData[field]];
-    updatedArray.splice(index, 1);
-    setFormData({
-      ...formData,
-      [field]: updatedArray,
-    });
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
@@ -114,7 +126,8 @@ export default function AddInternshipPage() {
 
       if (response.data.success) {
         toast.success("Success!", {
-          description: "internship has been posted successfully.",
+          description:
+            "Internship has been listed ! waiting for admin to verify the internship listing",
         });
         router.push("/alumni/internships");
       } else {
@@ -124,7 +137,10 @@ export default function AddInternshipPage() {
       }
     } catch (error) {
       toast.error("Error", {
-        description: error.response?.data?.message || error.message,
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "error adding the internship ",
       });
     } finally {
       setIsSubmitting(false);
@@ -163,7 +179,7 @@ export default function AddInternshipPage() {
         className="max-w-4xl mx-auto"
       >
         <motion.div variants={itemVariants}>
-          <h1 className="text-3xl font-bold mb-6">Post a New Internship</h1>
+          <h1 className="text-3xl font-bold mb-6">Post a New internship</h1>
         </motion.div>
 
         <form onSubmit={handleSubmit}>
@@ -179,7 +195,7 @@ export default function AddInternshipPage() {
                 <h2 className="text-xl font-semibold">Basic Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="internshipTitle">Internship Role*</Label>
+                    <Label htmlFor="internshipTitle">Internship Title *</Label>
                     <Input
                       id="internshipTitle"
                       name="internshipTitle"
@@ -200,16 +216,63 @@ export default function AddInternshipPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="internshipLocation">Location *</Label>
-                    <Input
-                      id="internshipLocation"
-                      name="internshipLocation"
-                      value={formData.internshipLocation}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                      <PopoverTrigger className="" asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={locationOpen}
+                          className="w-full max-w-72  justify-between"
+                        >
+                          {formData.internshipLocation
+                            ? locations.find(
+                                (location) =>
+                                  location === formData.internshipLocation
+                              )
+                            : "Select location"}
+                          <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command className={"w-full"}>
+                          <CommandInput
+                            placeholder="Search locaion"
+                            className="h-9"
+                          />
+                          <CommandList className={""}>
+                            <CommandEmpty>No locations found.</CommandEmpty>
+                            <CommandGroup>
+                              {locations.map((location, index) => (
+                                <CommandItem
+                                  key={index}
+                                  value={location}
+                                  onSelect={(currentValue) => {
+                                    setFormData({
+                                      ...formData,
+                                      internshipLocation: currentValue,
+                                    });
+                                    setLocationOpen(false);
+                                  }}
+                                >
+                                  {location}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      formData.internshipLocation === location
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="internshipSalary">Stipend</Label>
+                    <Label htmlFor="internshipSalary">Stipend {"( type NA if no stipend )"}</Label>
                     <Input
                       id="internshipSalary"
                       name="internshipSalary"
@@ -221,7 +284,6 @@ export default function AddInternshipPage() {
                 </div>
               </motion.div>
 
-              {/* internship Type Information */}
               <motion.div variants={itemVariants} className="space-y-6">
                 <h2 className="text-xl font-semibold">Internship Type</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -305,10 +367,10 @@ export default function AddInternshipPage() {
               {/* internship Description */}
               <motion.div variants={itemVariants} className="space-y-6">
                 <h2 className="text-xl font-semibold">
-                  Internship Description
+                  internship Description
                 </h2>
                 <div className="space-y-2">
-                  <Label htmlFor="internshipDescription">Description</Label>
+                  <Label htmlFor="internshipDescription">About</Label>
                   <Textarea
                     id="internshipDescription"
                     name="internshipDescription"
@@ -319,181 +381,287 @@ export default function AddInternshipPage() {
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="space-y-6">
-                <h2 className="text-xl font-semibold">Responsibilities</h2>
-                {formData.internshipResponsibilities.map(
-                  (responsibility, index) => (
-                    <div key={`resp-${index}`} className="flex gap-2">
-                      <Input
-                        value={responsibility}
-                        onChange={(e) =>
-                          handleArrayFieldChange(
-                            "internshipResponsibilities",
-                            index,
-                            e.target.value
-                          )
-                        }
-                        placeholder={`Responsibility ${index + 1}`}
-                      />
-                      {formData.internshipResponsibilities.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            removeArrayItem("internshipResponsibilities", index)
-                          }
-                        >
-                          -
-                        </Button>
-                      )}
-                      {index ===
-                        formData.internshipResponsibilities.length - 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            addArrayItem("internshipResponsibilities")
-                          }
-                        >
-                          +
-                        </Button>
-                      )}
-                    </div>
-                  )
-                )}
-              </motion.div>
+              <motion.div variants={itemVariants} className="space-y-2">
+                <h2 className="text-xl font-semibold">
+                  Internship Responsibilities
+                </h2>
 
-              {/* internship Qualifications */}
-              <motion.div variants={itemVariants} className="space-y-6">
-                <h2 className="text-xl font-semibold">Qualifications</h2>
-                {formData.internshipQualification.map(
-                  (qualification, index) => (
-                    <div key={`qual-${index}`} className="flex gap-2">
-                      <Input
-                        value={qualification}
-                        onChange={(e) =>
-                          handleArrayFieldChange(
-                            "internshipQualification",
-                            index,
-                            e.target.value
-                          )
-                        }
-                        placeholder={`Qualification ${index + 1}`}
-                      />
-                      {formData.internshipQualification.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            removeArrayItem("internshipQualification", index)
-                          }
-                        >
-                          -
-                        </Button>
-                      )}
-                      {index ===
-                        formData.internshipQualification.length - 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            addArrayItem("internshipQualification")
-                          }
-                        >
-                          +
-                        </Button>
-                      )}
-                    </div>
-                  )
-                )}
-              </motion.div>
-
-              {/* internship Eligibility */}
-              <motion.div variants={itemVariants} className="space-y-6">
-                <h2 className="text-xl font-semibold">Eligibility Criteria</h2>
-                {formData.internshipEligibility.map((eligibility, index) => (
-                  <div key={`elig-${index}`} className="flex gap-2">
-                    <Input
-                      value={eligibility}
-                      onChange={(e) =>
-                        handleArrayFieldChange(
-                          "internshipEligibility",
-                          index,
-                          e.target.value
-                        )
-                      }
-                      placeholder={`Eligibility Criteria ${index + 1}`}
-                    />
-                    {formData.internshipEligibility.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.internshipResponsibilities.map((res, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {res.slice(0, 20)}
+                      {"..."}
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        onClick={() =>
-                          removeArrayItem("internshipEligibility", index)
-                        }
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [
+                            ...formData.internshipResponsibilities,
+                          ];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            internshipResponsibilities: updatedArray,
+                          });
+                        }}
                       >
-                        -
+                        <X className="h-3 w-3" />
                       </Button>
-                    )}
-                    {index === formData.internshipEligibility.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addArrayItem("internshipEligibility")}
-                      >
-                        +
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <Input
+                    value={responsibility}
+                    onChange={(e) =>
+                      setResponsibility((prev) => e.target.value)
+                    }
+                    placeholder={`Add internship responsibilities`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      let array = [
+                        ...formData.internshipResponsibilities,
+                        responsibility,
+                      ];
+                      setFormData({
+                        ...formData,
+                        internshipResponsibilities: array,
+                      });
+                      setResponsibility((prev) => "");
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
               </motion.div>
 
-              {/* internship Skills */}
-              <motion.div variants={itemVariants} className="space-y-6">
+              <motion.div variants={itemVariants} className="space-y-2">
+                <h2 className="text-xl font-semibold">
+                  Internship Eligibility
+                </h2>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.internshipEligibility.map((elg, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {elg.slice(0, 20)}
+                      {"..."}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [
+                            ...formData.internshipEligibility,
+                          ];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            internshipEligibility: updatedArray,
+                          });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <Input
+                    value={eligibility}
+                    onChange={(e) => setEligibility((prev) => e.target.value)}
+                    placeholder={`Add internship eligibilities`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      let array = [
+                        ...formData.internshipEligibility,
+                        eligibility,
+                      ];
+                      setFormData({
+                        ...formData,
+                        internshipEligibility: array,
+                      });
+                      setEligibility((prev) => "");
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-2">
+                <h2 className="text-xl font-semibold">Internship Benefits</h2>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.internshipBenefits.map((ben, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {ben.slice(0, 20)}
+                      {"..."}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [...formData.internshipBenefits];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            internshipBenefits: updatedArray,
+                          });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <Input
+                    value={benifits}
+                    onChange={(e) => setBenifits((prev) => e.target.value)}
+                    placeholder={`Add internship benefits`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      let array = [...formData.internshipBenefits, benifits];
+                      setFormData({
+                        ...formData,
+                        internshipBenefits: array,
+                      });
+                      setBenifits((prev) => "");
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-2">
                 <h2 className="text-xl font-semibold">Required Skills</h2>
-                {formData.internshipSkills.map((skill, index) => (
-                  <div key={`skill-${index}`} className="flex gap-2">
-                    <Input
-                      value={skill}
-                      onChange={(e) =>
-                        handleArrayFieldChange(
-                          "internshipSkills",
-                          index,
-                          e.target.value
-                        )
-                      }
-                      placeholder={`Skill ${index + 1}`}
-                    />
-                    {formData.internshipSkills.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.internshipSkills.map((skill, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {skill}
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        onClick={() =>
-                          removeArrayItem("internshipSkills", index)
-                        }
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [...formData.internshipSkills];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            internshipSkills: updatedArray,
+                          });
+                        }}
                       >
-                        -
+                        <X className="h-3 w-3" />
                       </Button>
-                    )}
-                    {index === formData.internshipSkills.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addArrayItem("internshipSkills")}
-                      >
-                        +
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                    </Badge>
+                  ))}
+                </div>
+
+                <Popover open={skillOpen} onOpenChange={setSkillOpen}>
+                  <PopoverTrigger className={""} asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={skillOpen}
+                      className="w-full max-w-72 justify-between"
+                    >
+                      {formData.internshipSkills.length == 0
+                        ? "Select skills"
+                        : `${formData.internshipSkills.length} skills selected `}
+                      <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full max-w-72 p-0">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search skill.."
+                        className="h-9"
+                      />
+                      <CommandList className={"w-full max-w-72"}>
+                        <CommandEmpty>No skills found.</CommandEmpty>
+                        <CommandGroup>
+                          {skills.map((skill, index) => (
+                            <CommandItem
+                              key={index}
+                              value={skill}
+                              onSelect={(currentValue) => {
+                                if (formData.internshipSkills.includes(skill)) {
+                                  let array = formData.internshipSkills.filter(
+                                    (skill) => skill !== currentValue
+                                  );
+                                  setFormData({
+                                    ...formData,
+                                    internshipSkills: array,
+                                  });
+                                } else {
+                                  let array = formData.internshipSkills;
+
+                                  array.push(currentValue);
+                                  setFormData({
+                                    ...formData,
+                                    internshipSkills: array,
+                                  });
+                                }
+                                setSkillOpen(false);
+                              }}
+                            >
+                              {skill}
+                              <Check
+                                className={cn(
+                                  "ml-auto",
+                                  formData.internshipSkills.includes(skill)
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </motion.div>
 
               {/* internship Deadline */}
@@ -534,22 +702,6 @@ export default function AddInternshipPage() {
                       />
                     </PopoverContent>
                   </Popover>
-                </div>
-              </motion.div>
-
-              <motion.div variants={itemVariants} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="internshipExperienceRequired">
-                    Internship Duration(months)
-                  </Label>
-                  <Input
-                    id="internshipDuration"
-                    name="internshipDuration"
-                    type="number"
-                    min="0"
-                    value={formData.internshipDuration}
-                    onChange={handleInputChange}
-                  />
                 </div>
               </motion.div>
             </CardContent>

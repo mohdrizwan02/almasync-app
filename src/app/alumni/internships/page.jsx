@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, PlusIcon } from "lucide-react";
+import { Search, Filter, PlusIcon, ChevronsUpDown, Check } from "lucide-react";
 
 import {
   Select,
@@ -25,6 +25,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const locations = [
   { id: 1, name: "Delhi" },
@@ -35,8 +49,10 @@ const locations = [
 ];
 
 export default function InternshipsPage() {
-  const router = useRouter()
-  const pathname = usePathname()
+  const router = useRouter();
+  const pathname = usePathname();
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [locations, setLocations] = useState([]);
   const [internshipData, setInternshipData] = useState();
   const [pageLoad, setPageLoad] = useState(true);
   const [totalInternships, setTotalInternships] = useState();
@@ -45,6 +61,19 @@ export default function InternshipsPage() {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedWorkType, setSelectedWorkType] = useState("");
   const [selectedTiming, setSelectedTiming] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("/api/get-locations")
+      .then((response) => {
+        if (response.data.success) {
+          setLocations((prev) => response.data.locationData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+  }, []);
 
   useEffect(() => {
     axios
@@ -85,7 +114,11 @@ export default function InternshipsPage() {
   return (
     <>
       {pageLoad ? (
-        <div className="container mx-auto max-w-7xl md:px-5">loading</div>
+        <div className="container mx-auto max-w-7xl md:px-5">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       ) : (
         <div className="container mx-auto max-w-7xl md:px-5">
           <div className="flex flex-col min-h-screen bg-gray-50">
@@ -137,8 +170,8 @@ export default function InternshipsPage() {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                   >
-                    Explore number active opportunities across number active
-                    companies
+                    Explore {totalInternships} active opportunities across{" "}
+                    {companies} active companies
                   </motion.p>
 
                   {/* Stats */}
@@ -180,19 +213,13 @@ export default function InternshipsPage() {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                   >
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder="Search alumni by name, skills, company..."
-                        className="pl-10 pr-10 py-6 rounded-full bg-white/90 text-gray-800 w-full focus:ring-2 focus:ring-white"
-                      />
-                    </div>
                     <div className="flex justify-center mt-4">
                       <Button
                         variant="secondary"
                         className="bg-white/10 text-xl flex items-center cursor-pointer hover:bg-white/20 text-white w-50 rounded-full"
-                        onClick={() => router.push(`${pathname}/add-internship`)}
+                        onClick={() =>
+                          router.push(`${pathname}/add-internship`)
+                        }
                       >
                         <PlusIcon />
                         <motion.span
@@ -222,7 +249,7 @@ export default function InternshipsPage() {
                     <AccordionTrigger className="px-6 py-4 hover:no-underline">
                       <div className="flex items-center text-gray-700">
                         <Filter className="h-5 w-5 mr-2 text-indigo-600" />
-                        <span className="font-medium">Interships Filters</span>
+                        <span className="font-medium">Advanced Filters</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-4">
@@ -232,23 +259,68 @@ export default function InternshipsPage() {
                           <label className="block mb-1 text-sm font-medium">
                             Location
                           </label>
-                          <Select
-                            value={selectedLocation}
-                            onValueChange={(value) =>
-                              setSelectedLocation(value)
-                            }
+                          <Popover
+                            open={locationOpen}
+                            onOpenChange={setLocationOpen}
                           >
-                            <SelectTrigger className={"w-full max-w-72"}>
-                              <SelectValue placeholder="Select location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {locations.map((location, idx) => (
-                                <SelectItem key={idx} value={location.name}>
-                                  {location.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <PopoverTrigger className="" asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={locationOpen}
+                                className="w-full max-w-72  justify-between"
+                              >
+                                {selectedLocation !== ""
+                                  ? locations.find(
+                                      (location) =>
+                                        location === selectedLocation
+                                    )
+                                  : "Select location"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command className={"w-full"}>
+                                <CommandInput
+                                  placeholder="Search locaion"
+                                  className="h-9"
+                                />
+                                <CommandList className={""}>
+                                  <CommandEmpty>
+                                    No locations found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {locations.map((location, index) => (
+                                      <CommandItem
+                                        key={index}
+                                        value={location}
+                                        onSelect={(currentValue) => {
+                                          if (selectedLocation !== "") {
+                                            setSelectedLocation((prev) => "");
+                                          } else {
+                                            setSelectedLocation(
+                                              (prev) => currentValue
+                                            );
+                                          }
+                                          setLocationOpen(false);
+                                        }}
+                                      >
+                                        {location}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto",
+                                            selectedLocation === location
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </div>
 
                         {/* Work Type Filter */}
@@ -345,7 +417,10 @@ export default function InternshipsPage() {
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {internshipData.map((internship, index) => (
                     <div key={index} className="flex justify-center">
-                      <InternshipCard internship={internship} action={"alumni"} />
+                      <InternshipCard
+                        internship={internship}
+                        action={"alumni"}
+                      />
                     </div>
                   ))}
                 </div>

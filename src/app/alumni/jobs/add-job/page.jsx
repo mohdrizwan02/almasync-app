@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Calendar } from "lucide-react";
+import { Calendar, Check, ChevronsUpDown, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,11 +33,54 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import axios from "axios";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 
 export default function AddJobPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [date, setDate] = useState();
+
+  const [locations, setLocations] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  const [skillOpen, setSkillOpen] = useState(false);
+  const [responsibility, setResponsibility] = useState("");
+  const [benifits, setBenifits] = useState("");
+  const [eligibility, setEligibility] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("/api/get-locations")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setLocations((prev) => response.data.locationData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+
+    axios
+      .get("/api/get-skills")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setSkills((prev) => response.data.skillData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -47,17 +90,16 @@ export default function AddJobPage() {
     jobType: "",
     jobWorkType: "",
     jobDescription: "",
-    jobResponsibilities: [""],
-    jobQualification: [""],
-    jobEligibility: [""],
-    jobSkills: [""],
+    jobResponsibilities: [],
+    jobBenefits: [],
+    jobEligibility: [],
+    jobSkills: [],
     jobWorkDays: "",
     jobExperienceRequired: "",
     jobSalary: "",
     jobDeadline: null,
   });
 
-  // Handle input change for simple fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -66,35 +108,6 @@ export default function AddJobPage() {
     });
   };
 
-  // Handle array field changes
-  const handleArrayFieldChange = (field, index, value) => {
-    const updatedArray = [...formData[field]];
-    updatedArray[index] = value;
-    setFormData({
-      ...formData,
-      [field]: updatedArray,
-    });
-  };
-
-  // Add new item to array fields
-  const addArrayItem = (field) => {
-    setFormData({
-      ...formData,
-      [field]: [...formData[field], ""],
-    });
-  };
-
-  // Remove item from array fields
-  const removeArrayItem = (field, index) => {
-    const updatedArray = [...formData[field]];
-    updatedArray.splice(index, 1);
-    setFormData({
-      ...formData,
-      [field]: updatedArray,
-    });
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
@@ -109,7 +122,8 @@ export default function AddJobPage() {
 
       if (response.data.success) {
         toast.success("Success!", {
-          description: "Job has been posted successfully.",
+          description:
+            "Job has been listed ! waiting for admin to verify the job listing",
         });
         router.push("/alumni/jobs");
       } else {
@@ -119,7 +133,10 @@ export default function AddJobPage() {
       }
     } catch (error) {
       toast.error("Error", {
-        description: error.response?.data?.message || error.message,
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "error adding the job ",
       });
     } finally {
       setIsSubmitting(false);
@@ -196,13 +213,59 @@ export default function AddJobPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="jobLocation">Location *</Label>
-                    <Input
-                      id="jobLocation"
-                      name="jobLocation"
-                      value={formData.jobLocation}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                      <PopoverTrigger className="" asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={locationOpen}
+                          className="w-full max-w-72  justify-between"
+                        >
+                          {formData.jobLocation
+                            ? locations.find(
+                                (location) => location === formData.jobLocation
+                              )
+                            : "Select location"}
+                          <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command className={"w-full"}>
+                          <CommandInput
+                            placeholder="Search locaion"
+                            className="h-9"
+                          />
+                          <CommandList className={""}>
+                            <CommandEmpty>No locations found.</CommandEmpty>
+                            <CommandGroup>
+                              {locations.map((location, index) => (
+                                <CommandItem
+                                  key={index}
+                                  value={location}
+                                  onSelect={(currentValue) => {
+                                    setFormData({
+                                      ...formData,
+                                      jobLocation: currentValue,
+                                    });
+                                    setLocationOpen(false);
+                                  }}
+                                >
+                                  {location}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      formData.jobLocation === location
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="jobSalary">Salary</Label>
@@ -311,168 +374,287 @@ export default function AddJobPage() {
                 </div>
               </motion.div>
 
-              {/* Job Responsibilities */}
-              <motion.div variants={itemVariants} className="space-y-6">
+              <motion.div variants={itemVariants} className="space-y-2">
                 <h2 className="text-xl font-semibold">Responsibilities</h2>
-                {formData.jobResponsibilities.map((responsibility, index) => (
-                  <div key={`resp-${index}`} className="flex gap-2">
-                    <Input
-                      value={responsibility}
-                      onChange={(e) =>
-                        handleArrayFieldChange(
-                          "jobResponsibilities",
-                          index,
-                          e.target.value
-                        )
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.jobResponsibilities.map((res, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {res.slice(0, 20)}
+                      {"..."}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [
+                            ...formData.jobResponsibilities,
+                          ];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            jobResponsibilities: updatedArray,
+                          });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <Input
+                    value={responsibility}
+                    onChange={(e) =>
+                      setResponsibility((prev) => e.target.value)
+                    }
+                    placeholder={`Add job responsibilities`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (responsibility.trim().length === 0) {
+                        return;
                       }
-                      placeholder={`Responsibility ${index + 1}`}
-                    />
-                    {formData.jobResponsibilities.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          removeArrayItem("jobResponsibilities", index)
-                        }
-                      >
-                        -
-                      </Button>
-                    )}
-                    {index === formData.jobResponsibilities.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addArrayItem("jobResponsibilities")}
-                      >
-                        +
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                      let array = [
+                        ...formData.jobResponsibilities,
+                        responsibility,
+                      ];
+                      setFormData({
+                        ...formData,
+                        jobResponsibilities: array,
+                      });
+                      setResponsibility((prev) => "");
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
               </motion.div>
 
-              {/* Job Qualifications */}
-              <motion.div variants={itemVariants} className="space-y-6">
-                <h2 className="text-xl font-semibold">Qualifications</h2>
-                {formData.jobQualification.map((qualification, index) => (
-                  <div key={`qual-${index}`} className="flex gap-2">
-                    <Input
-                      value={qualification}
-                      onChange={(e) =>
-                        handleArrayFieldChange(
-                          "jobQualification",
-                          index,
-                          e.target.value
-                        )
+              <motion.div variants={itemVariants} className="space-y-2">
+                <h2 className="text-xl font-semibold">Eligibility</h2>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.jobEligibility.map((elg, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {elg.slice(0, 20)}
+                      {"..."}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [...formData.jobEligibility];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            jobEligibility: updatedArray,
+                          });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <Input
+                    value={eligibility}
+                    onChange={(e) => setEligibility((prev) => e.target.value)}
+                    placeholder={`Add job eligibilities`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (eligibility.trim().length === 0) {
+                        return;
                       }
-                      placeholder={`Qualification ${index + 1}`}
-                    />
-                    {formData.jobQualification.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          removeArrayItem("jobQualification", index)
-                        }
-                      >
-                        -
-                      </Button>
-                    )}
-                    {index === formData.jobQualification.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addArrayItem("jobQualification")}
-                      >
-                        +
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                      let array = [...formData.jobEligibility, eligibility];
+                      setFormData({
+                        ...formData,
+                        jobEligibility: array,
+                      });
+                      setEligibility((prev) => "");
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
               </motion.div>
 
-              {/* Job Eligibility */}
-              <motion.div variants={itemVariants} className="space-y-6">
-                <h2 className="text-xl font-semibold">Eligibility Criteria</h2>
-                {formData.jobEligibility.map((eligibility, index) => (
-                  <div key={`elig-${index}`} className="flex gap-2">
-                    <Input
-                      value={eligibility}
-                      onChange={(e) =>
-                        handleArrayFieldChange(
-                          "jobEligibility",
-                          index,
-                          e.target.value
-                        )
+              <motion.div variants={itemVariants} className="space-y-2">
+                <h2 className="text-xl font-semibold">Job Benefits</h2>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.jobBenefits.map((ben, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {ben.slice(0, 20)}
+                      {"..."}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [...formData.jobBenefits];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            jobBenefits: updatedArray,
+                          });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-4">
+                  <Input
+                    value={benifits}
+                    onChange={(e) => setBenifits((prev) => e.target.value)}
+                    placeholder={`Add job benefits`}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (benifits.trim().length === 0) {
+                        return;
                       }
-                      placeholder={`Eligibility Criteria ${index + 1}`}
-                    />
-                    {formData.jobEligibility.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeArrayItem("jobEligibility", index)}
-                      >
-                        -
-                      </Button>
-                    )}
-                    {index === formData.jobEligibility.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addArrayItem("jobEligibility")}
-                      >
-                        +
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                      let array = [...formData.jobBenefits, benifits];
+                      setFormData({
+                        ...formData,
+                        jobBenefits: array,
+                      });
+                      setBenifits((prev) => "");
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
               </motion.div>
 
-              {/* Job Skills */}
-              <motion.div variants={itemVariants} className="space-y-6">
+              <motion.div variants={itemVariants} className="space-y-2">
                 <h2 className="text-xl font-semibold">Required Skills</h2>
-                {formData.jobSkills.map((skill, index) => (
-                  <div key={`skill-${index}`} className="flex gap-2">
-                    <Input
-                      value={skill}
-                      onChange={(e) =>
-                        handleArrayFieldChange(
-                          "jobSkills",
-                          index,
-                          e.target.value
-                        )
-                      }
-                      placeholder={`Skill ${index + 1}`}
-                    />
-                    {formData.jobSkills.length > 1 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {formData.jobSkills.map((skill, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 text-sm py-1.5"
+                    >
+                      {skill}
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        onClick={() => removeArrayItem("jobSkills", index)}
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => {
+                          const updatedArray = [...formData.jobSkills];
+                          updatedArray.splice(index, 1);
+                          setFormData({
+                            ...formData,
+                            jobSkills: updatedArray,
+                          });
+                        }}
                       >
-                        -
+                        <X className="h-3 w-3" />
                       </Button>
-                    )}
-                    {index === formData.jobSkills.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => addArrayItem("jobSkills")}
-                      >
-                        +
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                    </Badge>
+                  ))}
+                </div>
+
+                <Popover open={skillOpen} onOpenChange={setSkillOpen}>
+                  <PopoverTrigger className={""} asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={skillOpen}
+                      className="w-full max-w-72 justify-between"
+                    >
+                      {formData.jobSkills.length == 0
+                        ? "Select skills"
+                        : `${formData.jobSkills.length} skills selected `}
+                      <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full max-w-72 p-0">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search skill.."
+                        className="h-9"
+                      />
+                      <CommandList className={"w-full max-w-72"}>
+                        <CommandEmpty>No skills found.</CommandEmpty>
+                        <CommandGroup>
+                          {skills.map((skill, index) => (
+                            <CommandItem
+                              key={index}
+                              value={skill}
+                              onSelect={(currentValue) => {
+                                if (formData.jobSkills.includes(skill)) {
+                                  let array = formData.jobSkills.filter(
+                                    (skill) => skill !== currentValue
+                                  );
+                                  setFormData({
+                                    ...formData,
+                                    jobSkills: array,
+                                  });
+                                } else {
+                                  let array = formData.jobSkills;
+
+                                  array.push(currentValue);
+                                  setFormData({
+                                    ...formData,
+                                    jobSkills: array,
+                                  });
+                                }
+                                setSkillOpen(false);
+                              }}
+                            >
+                              {skill}
+                              <Check
+                                className={cn(
+                                  "ml-auto",
+                                  formData.jobSkills.includes(skill)
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </motion.div>
 
               {/* Job Deadline */}

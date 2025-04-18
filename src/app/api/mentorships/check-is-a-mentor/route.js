@@ -1,12 +1,13 @@
-import jwt from "jsonwebtoken";
+import dbConnect from "@/lib/dbConnect";
 
 import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 
 import UserModel from "@/models/user.model";
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
+import MentorshipModel from "@/models/mentorship.model";
 
-dbConnect();
+await dbConnect();
 
 export async function GET(request) {
   try {
@@ -23,37 +24,37 @@ export async function GET(request) {
         }
       );
     }
-
     const decodedToken = jwt.verify(token, process.env.JWT_TOKEN_SECRET);
-
     const userId = decodedToken._id;
-
-    const user = await UserModel.findById(userId).select(
-      "-password -email  -role -createdAt -updatedAt"
-    );
+    const user = await UserModel.findById(userId);
 
     if (!user) {
       return NextResponse.json(
         {
-          message: "unauthorized request",
+          message: "unauthorized request ::user not found",
           success: false,
         },
         {
-          status: 500,
+          status: 404,
         }
       );
     }
 
-    return NextResponse.json(
-      {
+    const mentorship = await MentorshipModel.find({ mentor: userId });
+
+    if (mentorship[0]?.isAvailable) {
+      return NextResponse.json({
+        message: "fetched mentorship Status",
         success: true,
-        user: user._id,
-        name: user.firstName + " " + user.lastName,
-      },
-      {
-        status: 200,
-      }
-    );
+        isMentor: true,
+      });
+    }
+
+    return NextResponse.json({
+      message: "successfully fetched mentorship status",
+      success: true,
+      isMentor: false,
+    });
   } catch (error) {
     return NextResponse.json(
       {

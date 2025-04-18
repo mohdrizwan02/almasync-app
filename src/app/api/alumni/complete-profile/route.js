@@ -127,7 +127,7 @@ export async function POST(req) {
       }
     } else {
       console.log("cover Image is empty");
-      profileImageUrl = alumniProfile.coverImage || "";
+      coverImageUrl = alumniProfile.coverImage || "";
     }
 
     const updatedAlumniProfile = await alumniProfileModel.findOneAndUpdate(
@@ -182,5 +182,15 @@ export async function POST(req) {
         status: 200,
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "error occurred",
+        success: false,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

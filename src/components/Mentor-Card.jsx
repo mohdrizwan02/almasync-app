@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star} from "lucide-react";
+import { Star } from "lucide-react";
 const MentorCard = ({ mentor }) => {
   return (
     <motion.div
@@ -14,7 +14,7 @@ const MentorCard = ({ mentor }) => {
           {/* Profile Image - Half in Header, Half in Card */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <img
-              src={mentor.profileImage} // Profile Image URL
+              src={mentor.profileImage || "/bvrit-admin.png"}
               alt="Profile"
               className="w-full h-full object-cover"
             />
@@ -25,8 +25,6 @@ const MentorCard = ({ mentor }) => {
         <div className="text-center mt-12 p-4">
           <h3 className="text-lg font-semibold text-blue-600 flex items-center justify-center space-x-1">
             {mentor.fullName}
-            <Star size={16} className="text-yellow-500 ml-1" />
-            <span className="text-sm text-gray-600">{mentor.rating}</span>
           </h3>
 
           <p className="text-xs text-gray-500 mt-1 line-clamp-3 leading-5">

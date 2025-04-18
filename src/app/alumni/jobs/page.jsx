@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, PlusIcon } from "lucide-react";
+import { Search, Filter, PlusIcon, ChevronsUpDown, Check } from "lucide-react";
 
 import {
   Select,
@@ -20,143 +20,25 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
-
-// Sample data
-const locations = [
-  { id: 1, name: "Delhi" },
-  { id: 2, name: "Mumbai" },
-  { id: 3, name: "Bangalore" },
-  { id: 4, name: "Hyderabad" },
-  {
-    id: 4,
-    name: "remote",
-  },
-];
-
-// Sample alumni data
-const jobData = [
-  {
-    role: "Software Engineer",
-    company: "Innovatech Systems",
-    type: "Remote",
-    experience: "1-3 years",
-    salary: "₹8-12 LPA",
-    location: "Bengaluru",
-    skills: ["JavaScript", "React", "Node.js", "REST API"],
-    postedDaysAgo: 3,
-    isActive: true,
-  },
-  {
-    role: "Data Analyst",
-    company: "Insight Analytics",
-    type: "Onsite",
-    experience: "0-2 years",
-    salary: "₹6-9 LPA",
-    location: "Mumbai",
-    skills: ["SQL", "Excel", "Tableau", "Python"],
-    postedDaysAgo: 5,
-    isActive: true,
-  },
-  {
-    role: "DevOps Engineer",
-    company: "CloudSphere Solutions",
-    type: "Hybrid",
-    experience: "2-4 years",
-    salary: "₹10-15 LPA",
-    location: "Hyderabad",
-    skills: ["AWS", "Docker", "CI/CD", "Linux"],
-    postedDaysAgo: 12,
-    isActive: false,
-  },
-  {
-    role: "UI/UX Designer",
-    company: "DesignHive",
-    type: "Remote",
-    experience: "1-3 years",
-    salary: "₹5-8 LPA",
-    location: "Pune",
-    skills: ["Figma", "Adobe XD", "User Flows", "Prototyping"],
-    postedDaysAgo: 1,
-    isActive: true,
-  },
-  {
-    role: "Backend Developer",
-    company: "StackBuilt Tech",
-    type: "Onsite",
-    experience: "3-5 years",
-    salary: "₹12-18 LPA",
-    location: "Chennai",
-    skills: ["Java", "Spring Boot", "SQL", "Microservices"],
-    postedDaysAgo: 7,
-    isActive: true,
-  },
-  {
-    role: "Cybersecurity Analyst",
-    company: "SecureNet Corp",
-    type: "Hybrid",
-    experience: "2-4 years",
-    salary: "₹10-14 LPA",
-    location: "Delhi",
-    skills: ["Network Security", "Firewalls", "SIEM", "Python"],
-    postedDaysAgo: 15,
-    isActive: false,
-  },
-  {
-    role: "AI/ML Engineer",
-    company: "NeuronX Labs",
-    type: "Remote",
-    experience: "1-2 years",
-    salary: "₹14-20 LPA",
-    location: "Remote",
-    skills: ["Machine Learning", "TensorFlow", "Python", "NLP"],
-    postedDaysAgo: 2,
-    isActive: true,
-  },
-  {
-    role: "Product Manager",
-    company: "BrightBridge Tech",
-    type: "Onsite",
-    experience: "3-6 years",
-    salary: "₹18-25 LPA",
-    location: "Bengaluru",
-    skills: ["Agile", "JIRA", "Roadmapping", "Stakeholder Management"],
-    postedDaysAgo: 10,
-    isActive: true,
-  },
-  {
-    role: "Business Development Associate",
-    company: "SalesSprint",
-    type: "Remote",
-    experience: "0-1 year",
-    salary: "₹4-6 LPA + incentives",
-    location: "Remote",
-    skills: ["Communication", "CRM", "Sales", "Negotiation"],
-    postedDaysAgo: 4,
-    isActive: true,
-  },
-  {
-    role: "Quality Assurance Engineer",
-    company: "TestHive Pvt Ltd",
-    type: "Onsite",
-    experience: "1-2 years",
-    salary: "₹6-10 LPA",
-    location: "Kolkata",
-    skills: ["Manual Testing", "Selenium", "Test Cases", "Bug Tracking"],
-    postedDaysAgo: 9,
-    isActive: false,
-  },
-];
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 export default function JobsPage() {
   const [pageLoad, setPageLoad] = useState(true);
@@ -166,9 +48,25 @@ export default function JobsPage() {
   const [totalJobs, setTotalJobs] = useState();
   const router = useRouter();
   const pathname = usePathname();
+  const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedWorkType, setSelectedWorkType] = useState("");
   const [selectedTiming, setSelectedTiming] = useState("");
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get("/api/get-locations")
+      .then((response) => {
+        if (response.data.success) {
+          console.log(response);
+          setLocations((prev) => response.data.locationData);
+        }
+      })
+      .catch((error) => {
+        console.log("error occurred");
+      });
+  }, []);
 
   useEffect(() => {
     axios
@@ -183,9 +81,12 @@ export default function JobsPage() {
         console.log(response);
         if (response.data.success) {
           setJobData((prev) => response.data.jobData);
-          setCities((prev) => response.data.uniqueCities[0]?.uniqueCitiesCount);
+          setCities(
+            (prev) => response.data.uniqueCities[0]?.uniqueCitiesCount || 0
+          );
           setCompanies(
-            (prev) => response.data.uniqueCompanies[0]?.uniqueCompaniesCount
+            (prev) =>
+              response.data.uniqueCompanies[0]?.uniqueCompaniesCount || 0
           );
           setTotalJobs((prev) => response.data.totalJobs);
           setPageLoad((prev) => false);
@@ -206,7 +107,11 @@ export default function JobsPage() {
   return (
     <>
       {pageLoad ? (
-        <div className="container mx-auto max-w-7xl md:px-5">loading..</div>
+        <div className="container mx-auto max-w-7xl md:px-5">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       ) : (
         <div className="container mx-auto max-w-7xl md:px-5">
           <div className="flex flex-col min-h-screen bg-gray-50">
@@ -260,7 +165,7 @@ export default function JobsPage() {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                   >
-                    Explore number active opportunities across number active
+                    Explore {totalJobs} active opportunities {companies} active
                     companies
                   </motion.p>
 
@@ -296,9 +201,6 @@ export default function JobsPage() {
                       </div>
                     </div>
                   </motion.div>
-
-                
-                 
                 </div>
                 <div className="flex justify-center mt-4">
                   <Button
@@ -344,23 +246,70 @@ export default function JobsPage() {
                           <label className="block mb-1 text-sm font-medium">
                             Location
                           </label>
-                          <Select
-                            value={selectedLocation}
-                            onValueChange={(value) =>
-                              setSelectedLocation(value)
-                            }
+                          <Popover
+                            open={locationOpen}
+                            onOpenChange={setLocationOpen}
                           >
-                            <SelectTrigger className={"w-full max-w-72"}>
-                              <SelectValue placeholder="Select location" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {locations.map((location, idx) => (
-                                <SelectItem key={idx} value={location.name}>
-                                  {location.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <PopoverTrigger className="" asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={locationOpen}
+                                className="w-full max-w-72  justify-between"
+                              >
+                                {selectedLocation !== ""
+                                  ? locations.find(
+                                      (location) =>
+                                        location === selectedLocation
+                                    )
+                                  : "Select location"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command className={"w-full"}>
+                                <CommandInput
+                                  placeholder="Search locaion"
+                                  className="h-9"
+                                />
+                                <CommandList className={""}>
+                                  <CommandEmpty>
+                                    No locations found.
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {locations.map((location, index) => (
+                                      <CommandItem
+                                        key={index}
+                                        value={location}
+                                        onSelect={(currentValue) => {
+                                          if (
+                                            selectedLocation === currentValue
+                                          ) {
+                                            setSelectedLocation((prev) => "");
+                                          } else {
+                                            setSelectedLocation(
+                                              (prev) => currentValue
+                                            );
+                                          }
+                                          setLocationOpen(false);
+                                        }}
+                                      >
+                                        {location}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto",
+                                            selectedLocation === location
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </div>
 
                         {/* Work Type Filter */}
@@ -431,7 +380,6 @@ export default function JobsPage() {
                 </Accordion>
               </motion.div>
 
-              {/* Results Header */}
               <motion.div
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6"
                 initial={{ y: -10, opacity: 0 }}
@@ -453,7 +401,6 @@ export default function JobsPage() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                {/* Alumni Cards Grid */}
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {jobData.map((job, index) => (
                     <div key={index} className="flex justify-center">

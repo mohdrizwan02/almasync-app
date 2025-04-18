@@ -3,125 +3,515 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import ProfileHeader from "@/components/profile/profile-header";
-import AboutSection from "@/components/profile/about-section";
-import ExperienceSection from "@/components/profile/experience-section";
-import EducationSection from "@/components/profile/education-section";
-import CertificationsSection from "@/components/profile/certifications-section";
-import JobsSection from "@/components/profile/jobs-section";
-import EventsSection from "@/components/profile/events-section";
+
 import MentorshipSection from "@/components/profile/mentorship-section";
 import ConnectionsSection from "@/components/profile/connections-section";
-import EditProfileModal from "@/components/profile/edit-profile-modal";
 
 import { toast } from "sonner";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
+import {
+  Award,
+  Briefcase,
+  Building,
+  CalendarIcon,
+  Clock,
+  Edit,
+  ExternalLink,
+  GraduationCap,
+  Heart,
+  Languages,
+  MapPin,
+  Phone,
+  Plus,
+  Users,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-// Mock data based on the schema
-const mockProfile = {
-  _id: "123456789",
-  alumni: "user123",
-  enrollmentNumber: "EN12345",
-  dateOfBirth: new Date("1995-05-15"),
-  mobileNumber: "+91 9876543210",
-  college: "Delhi Technological University",
-  admissionYear: "2015",
-  passoutYear: "2019",
-  degree: "B.Tech",
-  department: "Computer Science",
-  gender: "male",
-  about: [
-    "Passionate software developer with expertise in web technologies",
-    "Open source contributor",
-  ],
-  skills: ["JavaScript", "React", "Node.js", "MongoDB", "Express"],
-  communicationLanguages: ["English", "Hindi"],
-  profileImage: "/placeholder.svg?height=150&width=150",
-  coverImage: "/placeholder.svg?height=300&width=1200",
-  currentlyWorkingIn: "Technology",
-  currentlyWorkingAt: "Google",
-  currentlyWorkingAs: "Senior Software Engineer",
-  currentExperience: "5 years",
-  profileHeadline: "Senior Software Engineer at Google | DTU Alumni",
-  availableForMentorship: true,
-  mentorshipExperience: 3,
-  mentorshipTopics: [
-    "Web Development",
-    "Career Guidance",
-    "Interview Preparation",
-  ],
-  education: [
-    {
-      educationInstitution: "Delhi Technological University",
-      educationDegree: "B.Tech",
-      educationFieldOfStudy: "Computer Science",
-      educationStartYear: 2015,
-      educationEndYear: 2019,
-      educationGrade: "9.2 CGPA",
-      educationDescription: "Graduated with honors",
-      educationAssociatedSkills: [
-        "Data Structures",
-        "Algorithms",
-        "Database Management",
-      ],
-    },
-  ],
-  experience: [
-    {
-      employmentCompany: "Google",
-      employmentPosition: "Senior Software Engineer",
-      employmentLocation: "Bangalore",
-      currentlyWorking: true,
-      employmentType: "Full-time",
-      employmentWorkType: "Hybrid",
-      employmentStartDate: new Date("2021-01-10"),
-      employmentEndDate: null,
-      employmentDescription: "Working on Google Cloud Platform",
-    },
-    {
-      employmentCompany: "Microsoft",
-      employmentPosition: "Software Engineer",
-      employmentLocation: "Hyderabad",
-      currentlyWorking: false,
-      employmentType: "Full-time",
-      employmentWorkType: "On-site",
-      employmentStartDate: new Date("2019-06-15"),
-      employmentEndDate: new Date("2020-12-31"),
-      employmentDescription: "Worked on Azure services",
-    },
-  ],
-  certifications: [
-    {
-      certificationName: "AWS Certified Solutions Architect",
-      certificationOrganization: "Amazon Web Services",
-      certificationIssueDate: new Date("2020-03-15"),
-      certificationExpirationDate: new Date("2023-03-15"),
-      certificationId: "AWS-123456",
-      certificationUrl: "https://aws.amazon.com/certification/",
-      certificationAssociatedSkills: [
-        "AWS",
-        "Cloud Architecture",
-        "Serverless",
-      ],
-    },
-  ],
-  socials: {
-    linkedin: "https://linkedin.com/in/johndoe",
-    github: "https://github.com/johndoe",
-    twitter: "https://twitter.com/johndoe",
-    portfolio: "https://johndoe.dev",
-  },
-  address: {
-    country: "India",
-    pincode: "110001",
-    landmark: "Near Central Park",
-    city: "New Delhi",
-    houseNumber: "123",
-  },
-  hobbies: ["Reading", "Traveling", "Photography"],
-};
+import { formatDate } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
 
-// Mock data for additional sections
+function EditCoverImageModal({ open, setOpen, refresh }) {
+  const [coverImage, setCoverImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCoverImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async () => {
+    if (!coverImage) return toast.error("Please select a cover image.");
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("coverImage", coverImage);
+
+      const res = await axios.post(
+        "/api/alumni/profile/edit-cover-photo",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (!res.data.success) throw new Error("Upload failed.");
+
+      toast.success("Cover image updated!");
+      await refresh();
+      setOpen(false);
+    } catch (err) {
+      toast.error("Failed to upload cover image.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Edit Cover Image</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <Input type="file" accept="image/*" onChange={handleFileChange} />
+          {previewUrl && (
+            <div className="rounded-lg overflow-hidden">
+              <Image
+                src={previewUrl}
+                alt="Cover Preview"
+                width={500}
+                height={200}
+                className="w-full h-auto object-cover rounded-lg"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditProfileImageModal({ open, setOpen, refresh }) {
+  const [profileImage, setProfileImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async () => {
+    if (!profileImage) return toast.error("Please select a profile image.");
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("profileImage", profileImage);
+
+      const res = await axios.post(
+        "/api/alumni/profile/edit-profile-photo",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (!res.data.success) throw new Error("Upload failed.");
+
+      toast.success("profile image updated!");
+      await refresh();
+      setOpen(false);
+    } catch (err) {
+      toast.error("Failed to upload cover image.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Edit Cover Image</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <Input type="file" accept="image/*" onChange={handleFileChange} />
+          {previewUrl && (
+            <div className="rounded-lg overflow-hidden">
+              <Image
+                src={previewUrl}
+                alt="Cover Preview"
+                width={500}
+                height={200}
+                className="w-full h-auto object-cover rounded-lg"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditBasicProfileDetailsModal({ open, setOpen, refresh, data }) {
+  const [basicProfileDetails, setBasicProfileDetails] = useState({
+    firstName: data.firstName,
+    lastName: data.lastName,
+    about: data.about,
+    profileHeadline: data.profileHeadline,
+    skills: data.skills,
+    hobbies: data.hobbies,
+    address: data.address,
+
+    gender: data.gender,
+    socials: data.socials,
+    mobileNumber: data.mobileNumber,
+  });
+
+  const [basicSubmitting, setbasicSubmitting] = useState(false);
+
+  const handleBasicProfileDetailsEdit = async () => {
+    try {
+      setbasicSubmitting((prev) => true);
+      const formData = new FormData();
+      formData.append("profileHeadline", basicProfileDetails.profileHeadline);
+      formData.append("mobileNumber", basicProfileDetails.mobileNumber);
+      formData.append(
+        "address",
+        JSON.stringify(basicProfileDetails.address || {})
+      );
+      formData.append("gender", basicProfileDetails.gender);
+      formData.append("about", basicProfileDetails.about);
+
+      const response = await axios.post(
+        "/api/alumni/profile/edit-profile-basic-details",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response);
+
+      if (response.data.success) {
+        toast.success("basic profile details updated!");
+        setbasicSubmitting((prev) => false);
+        await refresh();
+        setOpen((prev) => false);
+      } else {
+        throw new Error("error occurred");
+      }
+    } catch (error) {
+      toast.error("error occurred while saving profile");
+    }
+  };
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-3xl h-[80vh] items-start overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{"Edit Basic Profile Details"}</DialogTitle>
+            <DialogDescription>
+              Make changes to your profile information here. Click save when
+              you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="items-start">
+            <Tabs defaultValue="basic">
+              <TabsList>
+                <TabsTrigger value="basic">Basic profile</TabsTrigger>
+                <TabsTrigger value="currentwork">Current Work</TabsTrigger>
+              </TabsList>
+              <TabsContent value="basic">
+                <div className="py-4">
+                  {" "}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-3 mb-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="profileHeadline">Profile Headline</Label>
+                      <Input
+                        id="profileHeadline"
+                        name="profileHeadline"
+                        value={basicProfileDetails.profileHeadline || ""}
+                        onChange={(e) => {
+                          setBasicProfileDetails({
+                            ...basicProfileDetails,
+                            profileHeadline: e.target.value,
+                          });
+                        }}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select
+                        value={basicProfileDetails.gender || ""}
+                        onValueChange={(value) => {
+                          setBasicProfileDetails({
+                            ...basicProfileDetails,
+                            gender: value,
+                          });
+                        }}
+                      >
+                        <SelectTrigger className={"w-full"}>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="mobileNumber">Mobile Number</Label>
+                      <Input
+                        id="mobileNumber"
+                        name="mobileNumber"
+                        value={basicProfileDetails.mobileNumber || ""}
+                        onChange={(e) => {
+                          setBasicProfileDetails({
+                            ...basicProfileDetails,
+                            mobileNumber: e.target.value,
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    <Label>Address</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="address.houseNumber">
+                          House Number
+                        </Label>
+                        <Input
+                          id="address.houseNumber"
+                          value={basicProfileDetails.address?.houseNumber || ""}
+                          onChange={(e) => {
+                            let address = basicProfileDetails.address;
+                            address.houseNumber = e.target.value;
+
+                            setBasicProfileDetails({
+                              ...basicProfileDetails,
+                              address: address,
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address.landmark">Landmark</Label>
+                        <Input
+                          id="address.landmark"
+                          value={basicProfileDetails.address?.landmark || ""}
+                          onChange={(e) => {
+                            let address = basicProfileDetails.address;
+
+                            address.landmark = e.target.value;
+
+                            setBasicProfileDetails({
+                              ...basicProfileDetails,
+                              address: address,
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address.city">City</Label>
+                        <Input
+                          id="address.city"
+                          value={basicProfileDetails.address?.city || ""}
+                          onChange={(e) => {
+                            let address = basicProfileDetails.address;
+
+                            address.city = e.target.value;
+
+                            setBasicProfileDetails({
+                              ...basicProfileDetails,
+                              address: address,
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address.pincode">Pincode</Label>
+                        <Input
+                          id="address.pincode"
+                          value={basicProfileDetails.address?.pincode || ""}
+                          onChange={(e) => {
+                            let address = basicProfileDetails.address;
+
+                            address.pincode = e.target.value;
+
+                            setBasicProfileDetails({
+                              ...basicProfileDetails,
+                              address: address,
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address.country">Country</Label>
+                        <Input
+                          id="address.country"
+                          value={basicProfileDetails.address?.country || ""}
+                          onChange={(e) => {
+                            let address = basicProfileDetails.address;
+
+                            address.country = e.target.value;
+
+                            setBasicProfileDetails({
+                              ...basicProfileDetails,
+                              address: address,
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    <Label htmlFor="about">About Me</Label>
+                    <Textarea
+                      id="about"
+                      className="min-h-[150px]"
+                      value={basicProfileDetails.about}
+                      onChange={(e) => {
+                        setBasicProfileDetails({
+                          ...basicProfileDetails,
+                          about: e.target.value,
+                        });
+                      }}
+                      placeholder="Write a few paragraphs about yourself..."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline">Cancel</Button>
+                    <Button onClick={handleBasicProfileDetailsEdit}>
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="currentwork">
+                <div className="space-y-6 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="profileHeadline">Role</Label>
+                    <Input
+                      id="profileHeadline"
+                      name="profileHeadline"
+                      value={basicProfileDetails.profileHeadline || ""}
+                      // onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileHeadline">Company</Label>
+                    <Input
+                      id="profileHeadline"
+                      name="profileHeadline"
+                      value={basicProfileDetails.profileHeadline || ""}
+                      // onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileHeadline">Location</Label>
+                    <Input
+                      id="profileHeadline"
+                      name="profileHeadline"
+                      value={basicProfileDetails.profileHeadline || ""}
+                      // onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileHeadline">Experience</Label>
+                    <Input
+                      id="profileHeadline"
+                      name="profileHeadline"
+                      value={basicProfileDetails.profileHeadline || ""}
+                      // onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline">Cancel</Button>
+                    <Button>Save Changes</Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 const mockJobs = {
   posted: [
     {
@@ -218,8 +608,27 @@ const mockMentees = [
 export default function ProfilePage() {
   const [pageLoad, setPageLoad] = useState(true);
   const [profile, setProfile] = useState();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editSection, setEditSection] = useState("");
+
+  const [basicProfileDetails, setBasicProfiledetails] = useState();
+
+  const [isEditCoverImageModalOpen, setIsEditCoverImageModalOpen] =
+    useState(false);
+
+  const [isEditProfileImageModalOpen, setIsEditProfileImageModalOpen] =
+    useState(false);
+
+  const [
+    isEditBasicProfileDetailsModalOpen,
+    setIsEditBasicProfileDetailsModalOpen,
+  ] = useState(false);
+
+  const [isEditCurrentWorkModalOpen, setIsEditCurrentWorkModalOpen] =
+    useState(false);
+
+  const [isEditExperienceModalOpen, setIsEditExperienceModalOpen] =
+    useState(false);
+
+  const [formattedDate, setFormattedDate] = useState("");
 
   useEffect(() => {
     axios
@@ -228,6 +637,7 @@ export default function ProfilePage() {
         console.log(response);
         if (response.data.success) {
           setProfile((prev) => response.data.alumniProfileData);
+
           setPageLoad((prev) => false);
         }
       })
@@ -236,24 +646,37 @@ export default function ProfilePage() {
       });
   }, []);
 
-  const handleEdit = (section) => {
-    setEditSection(section);
-    setIsEditing(true);
-  };
+  useEffect(() => {
+    if (profile?.dateOfBirth) {
+      const date = new Date(profile.dateOfBirth).toLocaleDateString();
+      setFormattedDate(date);
+    } else {
+      setFormattedDate("Not specified");
+    }
+  }, [profile]);
 
-  const handleSave = (section, data) => {
-    setProfile((prev) => ({ ...prev, ...data }));
-    setIsEditing(false);
-    toast({
-      title: "Profile updated",
-      description: `Your ${section} information has been updated successfully.`,
-    });
+  const refresh = async () => {
+    setPageLoad((prev) => true);
+    try {
+      const response = await axios.get("/api/alumni/get-current-profile");
+      if (response.data.success) {
+        setProfile((prev) => response.data.alumniProfileData);
+
+        setPageLoad((prev) => false);
+      }
+    } catch (error) {
+      toast.error("error occurred");
+    }
   };
 
   return (
     <>
       {pageLoad ? (
-        <div className="container mx-auto py-6 px-4 md:px-6 max-w-screen-xl">loading ....</div>
+        <div className="container mx-auto max-w-7xl md:px-5">
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
       ) : (
         <motion.div
           initial={{ opacity: 0 }}
@@ -261,7 +684,132 @@ export default function ProfilePage() {
           transition={{ duration: 0.5 }}
           className="container mx-auto py-6 px-4 md:px-6 max-w-screen-xl"
         >
-          <ProfileHeader profile={profile} onEdit={() => handleEdit("basic")} />
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative"
+          >
+            <div className="h-48 md:h-64 w-full rounded-xl overflow-hidden relative">
+              <img
+                src={profile.coverImage}
+                alt="Cover"
+                className="w-full h-full object-cover"
+              />
+              <Button
+                size="sm"
+                className="absolute top-4 right-4 text-white"
+                onClick={() => setIsEditCoverImageModalOpen((prev) => true)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Cover
+              </Button>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-6 -mt-16 md:-mt-20 px-4 relative z-10">
+              <div className="flex flex-col items-center md:items-start">
+                <Avatar className="h-32 w-32 border-4 border-white shadow-md">
+                  <AvatarImage
+                    src={profile.profileImage || "/bvrit-admin.png"}
+                    alt={profile.profileHeadline}
+                  />
+                  <AvatarFallback>{"PROFILE IMAGE"}</AvatarFallback>
+                </Avatar>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 bg-white/80 hover:bg-white/90"
+                  onClick={() => setIsEditProfileImageModalOpen((prev) => true)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Photo
+                </Button>
+              </div>
+
+              <div className="flex-1 bg-white rounded-xl px-6 py-4 md:py-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold">
+                      {profile.firstName} {profile.lastName}
+                    </h1>
+                    <h1 className="text-lg text-gray-600 mt-2 font-bold">
+                      {profile.profileHeadline}
+                    </h1>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {profile.currentlyWorkingAt && (
+                        <div className="flex items-center text-muted-foreground">
+                          <Briefcase className="h-4 w-4 mr-1" />
+                          <span>
+                            {profile.currentlyWorkingAs} at{" "}
+                            {profile.currentlyWorkingAt}
+                          </span>
+                        </div>
+                      )}
+                      {profile.address?.city && (
+                        <div className="flex items-center text-muted-foreground">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          <span>
+                            {profile.address.city}, {profile.address.country}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {profile.college && (
+                        <div className="flex items-center text-muted-foreground">
+                          <GraduationCap className="h-4 w-4 mr-1" />
+                          <span>
+                            {profile.department} , {profile.degree},{" "}
+                            {profile.college} ({profile.admissionYear} -{" "}
+                            {profile.passoutYear})
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-4 mt-2">
+                      {profile.mobileNumber && (
+                        <div className="flex items-center text-muted-foreground">
+                          <Phone className="h-4 w-4 mr-1" />
+                          <span>{profile.mobileNumber}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    className="mt-4 md:mt-0"
+                    onClick={() => {
+                      console.log("button clicked");
+                      setIsEditBasicProfileDetailsModalOpen((prev) => true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {profile.availableForMentorship && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-100 text-green-800 hover:bg-green-200"
+                    >
+                      Available for Mentorship
+                    </Badge>
+                  )}
+                  {profile.skills?.slice(0, 5).map((skill, index) => (
+                    <Badge key={index} variant="outline">
+                      {skill}
+                    </Badge>
+                  ))}
+                  {profile.skills?.length > 5 && (
+                    <Badge variant="outline">
+                      +{profile.skills.length - 5} more
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
           <Tabs defaultValue="about" className="container mx-auto mt-6 w-full">
             <div className="flex w-full items-center justify-center">
@@ -285,7 +833,7 @@ export default function ProfilePage() {
                   Jobs
                 </TabsTrigger>
                 <TabsTrigger className={"max-w-40 w-full"} value="internships">
-                  internships
+                  Internships
                 </TabsTrigger>
                 <TabsTrigger className={"max-w-40 w-full"} value="events">
                   Events
@@ -301,59 +849,921 @@ export default function ProfilePage() {
 
             <div className="mt-4 space-y-6">
               <TabsContent value="about">
-                <AboutSection
-                  profile={profile}
-                  onEdit={() => handleEdit("about")}
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Personal Information</CardTitle>
+                        <CardDescription>
+                          Basic details about you
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Enrollment Number
+                          </p>
+                          <p>{profile.enrollmentNumber || "Not specified"}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Date of Birth
+                          </p>
+                          <p>{formattedDate}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Gender
+                          </p>
+                          <p className="capitalize">
+                            {profile.gender || "Not specified"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Mobile Number
+                          </p>
+                          <p>{profile.mobileNumber || "Not specified"}</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Address
+                        </p>
+                        {profile.address ? (
+                          <div className="flex items-start mt-1">
+                            <MapPin className="h-4 w-4 mr-2 mt-1 text-muted-foreground" />
+                            <p>
+                              {profile.address.houseNumber &&
+                                `${profile.address.houseNumber}, `}
+                              {profile.address.landmark &&
+                                `${profile.address.landmark}, `}
+                              {profile.address.city &&
+                                `${profile.address.city}, `}
+                              {profile.address.pincode &&
+                                `${profile.address.pincode}, `}
+                              {profile.address.country}
+                            </p>
+                          </div>
+                        ) : (
+                          <p>Not specified</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>About Me</CardTitle>
+                        <CardDescription>
+                          A brief description about yourself
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {profile.about ? (
+                        <p>{profile.about}</p>
+                      ) : (
+                        <p className="text-muted-foreground">
+                          No information provided
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Skills</CardTitle>
+                        <CardDescription>
+                          Your professional skills
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.skills && profile.skills.length > 0 ? (
+                          profile.skills.map((skill, index) => (
+                            <Badge key={index} variant="secondary">
+                              {skill}
+                            </Badge>
+                          ))
+                        ) : (
+                          <p className="text-muted-foreground">
+                            No skills listed
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Languages & Hobbies</CardTitle>
+                        <CardDescription>
+                          Languages you speak and things you enjoy
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="flex items-center mb-2">
+                          <Languages className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <p className="font-medium">Languages</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.communicationLanguages &&
+                          profile.communicationLanguages.length > 0 ? (
+                            profile.communicationLanguages.map(
+                              (language, index) => (
+                                <Badge key={index} variant="outline">
+                                  {language}
+                                </Badge>
+                              )
+                            )
+                          ) : (
+                            <p className="text-muted-foreground">
+                              No languages listed
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center mb-2">
+                          <Heart className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <p className="font-medium">Hobbies</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.hobbies && profile.hobbies.length > 0 ? (
+                            profile.hobbies.map((hobby, index) => (
+                              <Badge key={index} variant="outline">
+                                {hobby}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="text-muted-foreground">
+                              No hobbies listed
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Social Links */}
+                  <Card className="md:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Social Links</CardTitle>
+                        <CardDescription>
+                          Your presence across the web
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {profile.socials?.linkedin && (
+                          <a
+                            href={profile.socials.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center p-3 rounded-lg border hover:bg-muted transition-colors"
+                          >
+                            <svg
+                              className="h-5 w-5 mr-2"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                            >
+                              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                            </svg>
+                            LinkedIn
+                          </a>
+                        )}
+                        {profile.socials?.github && (
+                          <a
+                            href={profile.socials.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center p-3 rounded-lg border hover:bg-muted transition-colors"
+                          >
+                            <svg
+                              className="h-5 w-5 mr-2"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            GitHub
+                          </a>
+                        )}
+                        {profile.socials?.twitter && (
+                          <a
+                            href={profile.socials.twitter}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center p-3 rounded-lg border hover:bg-muted transition-colors"
+                          >
+                            <svg
+                              className="h-5 w-5 mr-2"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                            >
+                              <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                            </svg>
+                            Twitter
+                          </a>
+                        )}
+                        {profile.socials?.portfolio && (
+                          <a
+                            href={profile.socials.portfolio}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center p-3 rounded-lg border hover:bg-muted transition-colors"
+                          >
+                            <Globe className="h-5 w-5 mr-2" />
+                            Portfolio
+                          </a>
+                        )}
+                        {!profile.socials?.linkedin &&
+                          !profile.socials?.github &&
+                          !profile.socials?.twitter &&
+                          !profile.socials?.portfolio && (
+                            <p className="text-muted-foreground col-span-full">
+                              No social links provided
+                            </p>
+                          )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </TabsContent>
 
               <TabsContent value="experience">
-                <ExperienceSection
-                  experience={profile.experience}
-                  onEdit={() => handleEdit("experience")}
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Work Experience</CardTitle>
+                        <CardDescription>
+                          Your professional journey
+                        </CardDescription>
+                      </div>
+                      <Button>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Add Experience
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      {profile.experience && profile.experience.length > 0 ? (
+                        <div className="space-y-8">
+                          {profile.experience.map((exp, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                              className="relative pl-8 border-l-2 border-muted pb-8 last:pb-0"
+                            >
+                              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                <Building className="h-3 w-3 text-primary-foreground" />
+                              </div>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold">
+                                  {exp.employmentPosition}
+                                </h3>
+                              </div>
+                              <p className="text-muted-foreground mb-1">
+                                {exp.employmentCompany}
+                              </p>
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                <Badge variant="outline">
+                                  {exp.employmentType}
+                                </Badge>
+                                <Badge variant="outline">
+                                  {exp.employmentWorkType}
+                                </Badge>
+                                {exp.currentlyWorking && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-green-100 text-green-800 hover:bg-green-200"
+                                  >
+                                    Current
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center text-sm text-muted-foreground mb-1">
+                                <Calendar className="h-4 w-4 mr-2" />
+                                {formatDate(exp.employmentStartDate)} -{" "}
+                                {exp.currentlyWorking
+                                  ? "Present"
+                                  : formatDate(exp.employmentEndDate)}
+                              </div>
+                              <div className="flex items-center text-sm text-muted-foreground mb-3">
+                                <MapPin className="h-4 w-4 mr-2" />
+                                {exp.employmentLocation}
+                              </div>
+                              <p className="text-sm">
+                                {exp.employmentDescription}
+                              </p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground mb-4">
+                            No work experience added yet
+                          </p>
+                          <Button
+                            variant="outline"
+                            //  onClick={onEdit}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Add Your First Experience
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </TabsContent>
 
               <TabsContent value="education">
-                <EducationSection
-                  education={profile.education}
-                  onEdit={() => handleEdit("education")}
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Education</CardTitle>
+                        <CardDescription>
+                          Your academic background
+                        </CardDescription>
+                      </div>
+                      <Button
+                      // onClick={onEdit}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Add Education
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      {profile.education && profile.education.length > 0 ? (
+                        <div className="space-y-8">
+                          {profile.education.map((edu, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                              className="relative pl-8 border-l-2 border-muted pb-8 last:pb-0"
+                            >
+                              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                <GraduationCap className="h-3 w-3 text-primary-foreground" />
+                              </div>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold">
+                                  {edu.educationDegree} in{" "}
+                                  {edu.educationFieldOfStudy}
+                                </h3>
+                              </div>
+                              <p className="text-muted-foreground mb-1">
+                                {edu.educationInstitution}
+                              </p>
+                              <div className="flex items-center text-sm text-muted-foreground mb-1">
+                                <Calendar className="h-4 w-4 mr-2" />
+                                {edu.educationStartYear} -{" "}
+                                {edu.educationEndYear}
+                              </div>
+                              {edu.educationGrade && (
+                                <p className="text-sm mb-2">
+                                  Grade: {edu.educationGrade}
+                                </p>
+                              )}
+                              {edu.educationDescription && (
+                                <p className="text-sm mb-3">
+                                  {edu.educationDescription}
+                                </p>
+                              )}
+                              {edu.educationAssociatedSkills &&
+                                edu.educationAssociatedSkills.length > 0 && (
+                                  <div>
+                                    <p className="text-sm font-medium mb-1">
+                                      Skills Acquired:
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {edu.educationAssociatedSkills.map(
+                                        (skill, idx) => (
+                                          <Badge key={idx} variant="outline">
+                                            {skill}
+                                          </Badge>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                            </motion.div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground mb-4">
+                            No education details added yet
+                          </p>
+                          <Button
+                            variant="outline"
+                            // onClick={onEdit}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Add Your Education
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </TabsContent>
 
               <TabsContent value="certifications">
-                <CertificationsSection
-                  certifications={profile.certifications}
-                  onEdit={() => handleEdit("certifications")}
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Certifications</CardTitle>
+                        <CardDescription>
+                          Your professional certifications
+                        </CardDescription>
+                      </div>
+                      <Button>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Add Certification
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      {profile.certifications &&
+                      profile.certifications.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {profile.certifications.map((cert, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                              className="border rounded-lg p-4 relative"
+                            >
+                              <div className="flex items-start mb-3">
+                                <Award className="h-5 w-5 mr-2 text-primary mt-1" />
+                                <div>
+                                  <h3 className="font-semibold">
+                                    {cert.certificationName}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {cert.certificationOrganization}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 mb-3">
+                                <div className="flex items-center text-sm">
+                                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  <span>
+                                    Issued:{" "}
+                                    {formatDate(cert.certificationIssueDate)}
+                                  </span>
+                                </div>
+                                {cert.certificationExpirationDate && (
+                                  <div className="flex items-center text-sm">
+                                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                                    <span>
+                                      Expires:{" "}
+                                      {formatDate(
+                                        cert.certificationExpirationDate
+                                      )}
+                                    </span>
+                                  </div>
+                                )}
+                                {cert.certificationId && (
+                                  <div className="text-sm">
+                                    <span className="font-medium">
+                                      Credential ID:
+                                    </span>{" "}
+                                    {cert.certificationId}
+                                  </div>
+                                )}
+                              </div>
+
+                              {cert.certificationUrl && (
+                                <a
+                                  href={cert.certificationUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-sm text-primary hover:underline mb-3"
+                                >
+                                  View Certificate{" "}
+                                  <ExternalLink className="h-3 w-3 ml-1" />
+                                </a>
+                              )}
+
+                              {cert.certificationAssociatedSkills &&
+                                cert.certificationAssociatedSkills.length >
+                                  0 && (
+                                  <div>
+                                    <p className="text-sm font-medium mb-1">
+                                      Skills:
+                                    </p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {cert.certificationAssociatedSkills.map(
+                                        (skill, idx) => (
+                                          <Badge
+                                            key={idx}
+                                            variant="outline"
+                                            className="text-xs"
+                                          >
+                                            {skill}
+                                          </Badge>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                            </motion.div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground mb-4">
+                            No certifications added yet
+                          </p>
+                          <Button
+                            variant="outline"
+                            //  onClick={onEdit}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Add Your First Certification
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </TabsContent>
 
               <TabsContent value="jobs">
-                <JobsSection
-                  postedJobs={mockJobs.posted}
-                  appliedJobs={mockJobs.applied}
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Tabs defaultValue="posted" className="w-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <TabsList>
+                        <TabsTrigger value="posted">Posted Jobs</TabsTrigger>
+                        <TabsTrigger value="applied">Applied Jobs</TabsTrigger>
+                      </TabsList>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Post New Job
+                      </Button>
+                    </div>
+
+                    <TabsContent value="posted">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>
+                            Jobs & Internships You've Posted
+                          </CardTitle>
+                          <CardDescription>
+                            Manage your job listings and view applicants
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {mockJobs.posted && mockJobs.posted.length > 0 ? (
+                            <div className="space-y-4">
+                              {mockJobs.posted.map((job, index) => (
+                                <motion.div
+                                  key={index}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: index * 0.1,
+                                  }}
+                                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                      <div className="flex items-center">
+                                        <Briefcase className="h-5 w-5 mr-2 text-primary" />
+                                        <h3 className="font-semibold">
+                                          {job.title}
+                                        </h3>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground ml-7">
+                                        {job.company}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex items-center">
+                                        <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+                                        <span className="text-sm">
+                                          {job.applicants} applicants
+                                        </span>
+                                      </div>
+                                      <Button variant="outline" size="sm">
+                                        View Details
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground mb-4">
+                                You haven't posted any jobs or internships yet
+                              </p>
+                              <Button variant="outline">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Post Your First Job
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    <TabsContent value="applied">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>
+                            Jobs & Internships You've Applied To
+                          </CardTitle>
+                          <CardDescription>
+                            Track your job applications
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {mockJobs.applied && mockJobs.applied.length > 0 ? (
+                            <div className="space-y-4">
+                              {mockJobs.applied.map((job, index) => (
+                                <motion.div
+                                  key={index}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: index * 0.1,
+                                  }}
+                                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                      <div className="flex items-center">
+                                        <Briefcase className="h-5 w-5 mr-2 text-primary" />
+                                        <h3 className="font-semibold">
+                                          {job.title}
+                                        </h3>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground ml-7">
+                                        {job.company}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <Badge
+                                        variant={
+                                          job.status === "Interview"
+                                            ? "secondary"
+                                            : "outline"
+                                        }
+                                        className={
+                                          job.status === "Interview"
+                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                            : ""
+                                        }
+                                      >
+                                        <Clock className="h-3 w-3 mr-1" />
+                                        {job.status}
+                                      </Badge>
+                                      <Button variant="outline" size="sm">
+                                        <ExternalLink className="h-3 w-3 mr-1" />
+                                        View Job
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground mb-4">
+                                You haven't applied to any jobs or internships
+                                yet
+                              </p>
+                              <Button variant="outline">
+                                Browse Open Positions
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  </Tabs>
+                </motion.div>
               </TabsContent>
               <TabsContent value="internships">
-                <JobsSection
-                  postedJobs={mockJobs.posted}
-                  appliedJobs={mockJobs.applied}
-                />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Tabs defaultValue="posted" className="w-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <TabsList>
+                        <TabsTrigger value="posted">Posted Jobs</TabsTrigger>
+                        <TabsTrigger value="applied">Applied Jobs</TabsTrigger>
+                      </TabsList>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Post New Job
+                      </Button>
+                    </div>
+
+                    <TabsContent value="posted">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>
+                            Jobs & Internships You've Posted
+                          </CardTitle>
+                          <CardDescription>
+                            Manage your job listings and view applicants
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {mockJobs.posted && mockJobs.posted.length > 0 ? (
+                            <div className="space-y-4">
+                              {mockJobs.posted.map((job, index) => (
+                                <motion.div
+                                  key={index}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: index * 0.1,
+                                  }}
+                                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                      <div className="flex items-center">
+                                        <Briefcase className="h-5 w-5 mr-2 text-primary" />
+                                        <h3 className="font-semibold">
+                                          {job.title}
+                                        </h3>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground ml-7">
+                                        {job.company}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex items-center">
+                                        <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+                                        <span className="text-sm">
+                                          {job.applicants} applicants
+                                        </span>
+                                      </div>
+                                      <Button variant="outline" size="sm">
+                                        View Details
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground mb-4">
+                                You haven't posted any jobs or internships yet
+                              </p>
+                              <Button variant="outline">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Post Your First Job
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    <TabsContent value="applied">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>
+                            Jobs & Internships You've Applied To
+                          </CardTitle>
+                          <CardDescription>
+                            Track your job applications
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {mockJobs.applied && mockJobs.applied.length > 0 ? (
+                            <div className="space-y-4">
+                              {mockJobs.applied.map((job, index) => (
+                                <motion.div
+                                  key={index}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: index * 0.1,
+                                  }}
+                                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                      <div className="flex items-center">
+                                        <Briefcase className="h-5 w-5 mr-2 text-primary" />
+                                        <h3 className="font-semibold">
+                                          {job.title}
+                                        </h3>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground ml-7">
+                                        {job.company}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <Badge
+                                        variant={
+                                          job.status === "Interview"
+                                            ? "secondary"
+                                            : "outline"
+                                        }
+                                        className={
+                                          job.status === "Interview"
+                                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                            : ""
+                                        }
+                                      >
+                                        <Clock className="h-3 w-3 mr-1" />
+                                        {job.status}
+                                      </Badge>
+                                      <Button variant="outline" size="sm">
+                                        <ExternalLink className="h-3 w-3 mr-1" />
+                                        View Job
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground mb-4">
+                                You haven't applied to any jobs or internships
+                                yet
+                              </p>
+                              <Button variant="outline">
+                                Browse Open Positions
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  </Tabs>
+                </motion.div>
               </TabsContent>
 
-              <TabsContent value="events">
-                <EventsSection
-                  postedEvents={mockEvents.posted}
-                  registeredEvents={mockEvents.registered}
-                />
-              </TabsContent>
+              <TabsContent value="events"></TabsContent>
 
               <TabsContent value="mentorship">
-                <MentorshipSection
-                  profile={profile}
-                  mentees={mockMentees}
-                  onEdit={() => handleEdit("mentorship")}
-                />
+                <MentorshipSection profile={profile} mentees={mockMentees} />
               </TabsContent>
 
               <TabsContent value="connections">
@@ -362,15 +1772,24 @@ export default function ProfilePage() {
             </div>
           </Tabs>
 
-          {isEditing && (
-            <EditProfileModal
-              isOpen={isEditing}
-              onClose={() => setIsEditing(false)}
-              section={editSection}
-              profile={profile}
-              onSave={handleSave}
-            />
-          )}
+          <EditCoverImageModal
+            open={isEditCoverImageModalOpen}
+            setOpen={setIsEditCoverImageModalOpen}
+            refresh={refresh}
+          />
+
+          <EditProfileImageModal
+            open={isEditProfileImageModalOpen}
+            setOpen={setIsEditProfileImageModalOpen}
+            refresh={refresh}
+          />
+
+          <EditBasicProfileDetailsModal
+            data={profile}
+            open={isEditBasicProfileDetailsModalOpen}
+            setOpen={setIsEditBasicProfileDetailsModalOpen}
+            refresh={refresh}
+          />
         </motion.div>
       )}
     </>

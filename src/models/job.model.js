@@ -47,7 +47,7 @@ const JobSchema = new mongoose.Schema(
         type: String,
       },
     ],
-    jobQualification: [
+    jobBenefits: [
       {
         type: String,
       },
@@ -75,12 +75,6 @@ const JobSchema = new mongoose.Schema(
     jobDeadline: {
       type: Date,
     },
-    applied: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
-      },
-    ],
   },
   {
     timestamps: true,
