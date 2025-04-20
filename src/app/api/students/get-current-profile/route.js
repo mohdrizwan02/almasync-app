@@ -1,10 +1,10 @@
-import alumniProfileModel from "@/models/alumniProfile.model";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import UserModel from "@/models/user.model";
+import StudentProfileModel from "@/models/studentProfile.model";
 
-export async function POST(request) {
+export async function GET(request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
@@ -24,17 +24,11 @@ export async function POST(request) {
 
     const userId = decodedToken._id;
 
-    const reqBody = await request.json();
-
-    const { alumniId } = reqBody;
-
-    console.log(alumniId);
-
-    let alumniProfileData = await alumniProfileModel.findOne({
-      alumni: alumniId,
+    let studentProfileData = await StudentProfileModel.findOne({
+      student: userId,
     });
 
-    if (!alumniProfileData) {
+    if (!studentProfileData) {
       return NextResponse.json(
         {
           message: "unauthorized token",
@@ -46,12 +40,9 @@ export async function POST(request) {
       );
     }
 
-    console.log(alumniProfileData);
-
-    const user = await UserModel.findById(alumniProfileData.alumni).select(
-      "-password -role -verifyOtp"
+    const user = await UserModel.findById(userId).select(
+      "-password -role -isOnline -verifyOtp"
     );
-
     if (!user) {
       return NextResponse.json(
         {
@@ -64,19 +55,18 @@ export async function POST(request) {
       );
     }
 
-    alumniProfileData = {
-      ...alumniProfileData.toObject(),
+    studentProfileData = {
+      ...studentProfileData.toObject(),
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      isOnline: user.isOnline,
     };
 
     return NextResponse.json(
       {
-        message: "successfully fetched the alumni data",
+        message: "successfully fetched the student data",
         success: true,
-        alumniProfileData: alumniProfileData,
+        studentProfileData: studentProfileData,
       },
       {
         status: 200,

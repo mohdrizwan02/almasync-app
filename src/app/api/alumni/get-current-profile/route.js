@@ -55,7 +55,6 @@ export async function GET(request) {
       );
     }
 
-
     alumniProfileData = {
       ...alumniProfileData.toObject(),
       firstName: user.firstName,

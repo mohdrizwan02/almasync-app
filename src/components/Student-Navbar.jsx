@@ -168,7 +168,7 @@ const Navbar = () => {
             <DropdownMenuContent className="w-48 mt-2">
               <DropdownMenuItem asChild>
                 <Link
-                  href="/alumni/profile"
+                  href="/student/profile"
                   className="flex items-center gap-2"
                 >
                   <User className="w-4 h-4" />
@@ -178,7 +178,7 @@ const Navbar = () => {
 
               <DropdownMenuItem asChild>
                 <Link
-                  href="/alumni/messages"
+                  href="/student/messages"
                   className="flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
@@ -188,7 +188,7 @@ const Navbar = () => {
 
               <DropdownMenuItem asChild>
                 <Link
-                  href="/alumni/notifications"
+                  href="/student/notifications"
                   className="flex items-center gap-2"
                 >
                   <Bell className="w-4 h-4" />

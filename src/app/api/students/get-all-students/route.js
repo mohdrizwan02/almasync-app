@@ -3,10 +3,31 @@ import { NextResponse } from "next/server";
 import UserModel from "@/models/user.model";
 
 import dbConnect from "@/lib/dbConnect";
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
 await dbConnect();
 export async function GET(request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        {
+          message: "unauthorized request",
+          success: false,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    const decodedToken = jwt.verify(token, process.env.JWT_TOKEN_SECRET);
+
+    const userId = decodedToken._id;
+
     const { searchParams } = new URL(request.url);
     const department = searchParams.get("department");
     const batch = searchParams.get("batch");
@@ -18,6 +39,7 @@ export async function GET(request) {
 
     const match = {
       isProfileComplete: true,
+      _id: { $ne: new mongoose.Types.ObjectId(userId) },
     };
 
     if (department) {

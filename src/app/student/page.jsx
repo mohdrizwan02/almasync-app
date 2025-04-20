@@ -38,7 +38,7 @@ const buttonHover = {
   tap: { scale: 0.95 },
 };
 
-const AlumniPage = () => {
+const StudentPage = () => {
   const [pageLoad, setPageLoad] = useState(true);
   const [bannerStatus, setBannerStatus] = useState();
   const [studentData, setStudentData] = useState([]);
@@ -189,7 +189,7 @@ const AlumniPage = () => {
             "Completing your profile helps you get better recommendations and visibility."
           }
           bannerStatus={bannerStatus}
-          buttonLink={"/alumni/profile/complete-profile"}
+          buttonLink={"/student/profile/complete-profile"}
           buttonText={"complete Profile"}
         />
       )}
@@ -239,7 +239,7 @@ const AlumniPage = () => {
                 type={"feature"}
                 data={features}
                 itemAnimation={carouselItem}
-                action={"alumni"}
+                action={"student"}
               />
             </motion.div>
           </motion.div>
@@ -284,7 +284,7 @@ const AlumniPage = () => {
                 viewport={{ once: true }}
                 variants={slideUp}
               >
-                <Carousel type={"job"} data={jobData} action="alumni" />
+                <Carousel type={"job"} data={jobData} action="student" />
               </motion.div>
               <motion.button
                 className="flex items-center gap-2 justify-center px-8 py-3 cursor-pointer bg-orange-500 text-white rounded-full font-medium"
@@ -342,7 +342,7 @@ const AlumniPage = () => {
                 <Carousel
                   type={"internship"}
                   data={internshipData}
-                  action={"alumni"}
+                  action={"student"}
                 />
               </motion.div>
               <motion.button
@@ -396,7 +396,7 @@ const AlumniPage = () => {
                 viewport={{ once: true }}
                 variants={slideUp}
               >
-                <Carousel type={"alumni"} data={alumniData} action="alumni" />
+                <Carousel type={"alumni"} data={alumniData} action="student" />
               </motion.div>
               <motion.button
                 className="flex items-center gap-2 justify-center px-8 py-3 cursor-pointer bg-orange-500 text-white rounded-full font-medium"
@@ -444,7 +444,7 @@ const AlumniPage = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <Carousel type={"mentor"} data={mentorData} action="alumni" />
+                <Carousel type={"mentor"} data={mentorData} action="student" />
               </motion.div>
               <motion.div
                 className="flex justify-center max-w-screen-xl"
@@ -500,7 +500,7 @@ const AlumniPage = () => {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <Carousel type={"webinar"} data={eventData} action="alumni" />
+                <Carousel type={"webinar"} data={eventData} action="student" />
               </motion.div>
               <motion.div
                 className="flex justify-center max-w-screen-xl"
@@ -536,4 +536,4 @@ const AlumniPage = () => {
   );
 };
 
-export default AlumniPage;
+export default StudentPage;

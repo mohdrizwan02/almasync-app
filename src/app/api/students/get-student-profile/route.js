@@ -1,8 +1,8 @@
-import alumniProfileModel from "@/models/alumniProfile.model";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import UserModel from "@/models/user.model";
+import StudentProfileModel from "@/models/studentProfile.model";
 
 export async function POST(request) {
   try {
@@ -26,15 +26,15 @@ export async function POST(request) {
 
     const reqBody = await request.json();
 
-    const { alumniId } = reqBody;
+    const { studentId } = reqBody;
 
-    console.log(alumniId);
+    console.log(studentId);
 
-    let alumniProfileData = await alumniProfileModel.findOne({
-      alumni: alumniId,
+    let studentProfileData = await StudentProfileModel.findOne({
+      student: studentId,
     });
 
-    if (!alumniProfileData) {
+    if (!studentProfileData) {
       return NextResponse.json(
         {
           message: "unauthorized token",
@@ -46,9 +46,9 @@ export async function POST(request) {
       );
     }
 
-    console.log(alumniProfileData);
+    console.log(studentProfileData);
 
-    const user = await UserModel.findById(alumniProfileData.alumni).select(
+    const user = await UserModel.findById(studentProfileData.student).select(
       "-password -role -verifyOtp"
     );
 
@@ -64,8 +64,8 @@ export async function POST(request) {
       );
     }
 
-    alumniProfileData = {
-      ...alumniProfileData.toObject(),
+    studentProfileData = {
+      ...studentProfileData.toObject(),
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
@@ -74,9 +74,9 @@ export async function POST(request) {
 
     return NextResponse.json(
       {
-        message: "successfully fetched the alumni data",
+        message: "successfully fetched the student data",
         success: true,
-        alumniProfileData: alumniProfileData,
+        studentProfileData: studentProfileData,
       },
       {
         status: 200,

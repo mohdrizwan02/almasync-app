@@ -13,6 +13,10 @@ const AlumniProfileSchema = new mongoose.Schema(
       type: Date,
     },
 
+    resume: {
+      type: String,
+    },
+
     mobileNumber: {
       type: String,
     },
