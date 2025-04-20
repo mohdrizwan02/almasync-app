@@ -15,6 +15,7 @@ async function dbConnect() {
 
     console.log("DB Connected Successfully");
   } catch (error) {
+    console.log(error)
     console.log("Error occurred while connecting to the database");
     process.exit(1);
   }

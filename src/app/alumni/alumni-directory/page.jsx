@@ -97,7 +97,7 @@ export default function AlumniDirectoryPage() {
     "2024",
     "2025",
   ];
-  const [alumniData, setAlumniData] = useState();
+  const [alumniData, setAlumniData] = useState([]);
 
   useEffect(() => {
     axios
@@ -420,11 +420,15 @@ export default function AlumniDirectoryPage() {
               >
                 {/* Alumni Cards Grid */}
                 <div className="grid grid-cols-1 container sm:px-0 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alumniData.map((alumni, index) => (
-                    <div key={index} className="flex justify-center">
-                      <AlumniCard alumni={alumni} action={"alumni"} />
-                    </div>
-                  ))}
+                  {alumniData && alumniData.length > 0 ? (
+                    alumniData.map((alumni, index) => (
+                      <div key={index} className="flex justify-center">
+                        <AlumniCard alumni={alumni} action={"alumni"} />
+                      </div>
+                    ))
+                  ) : (
+                    <div>No alumni to display</div>
+                  )}
                 </div>
               </motion.div>
 
