@@ -15,6 +15,8 @@ import {
   Briefcase,
   Building,
   CalendarIcon,
+  Check,
+  ChevronsUpDown,
   Clock,
   Edit,
   ExternalLink,
@@ -25,6 +27,7 @@ import {
   Phone,
   Plus,
   Users,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +39,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +65,14 @@ import {
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 function EditCoverImageModal({ open, setOpen, refresh }) {
   const [coverImage, setCoverImage] = useState(null);
@@ -225,17 +236,22 @@ function EditBasicProfileDetailsModal({ open, setOpen, refresh, data }) {
     lastName: data.lastName,
     about: data.about,
     profileHeadline: data.profileHeadline,
-    skills: data.skills,
-    hobbies: data.hobbies,
+
     address: data.address,
 
     gender: data.gender,
-    socials: data.socials,
     mobileNumber: data.mobileNumber,
   });
 
-  const [basicSubmitting, setbasicSubmitting] = useState(false);
+  const [currentWorkDetails, setCurrentWorkDetails] = useState({
+    currentlyWorkingAt: data.currentlyWorkingAt,
+    currentlyWorkingAs: data.currentlyWorkingAs,
+    currentlyWorkingIn: data.currentlyWorkingIn,
+    currentExperience: data.currentExperience,
+  });
 
+  const [basicSubmitting, setbasicSubmitting] = useState(false);
+  const [workSubmitting, setWorkSubmitting] = useState(false);
   const handleBasicProfileDetailsEdit = async () => {
     try {
       setbasicSubmitting((prev) => true);
@@ -270,7 +286,55 @@ function EditBasicProfileDetailsModal({ open, setOpen, refresh, data }) {
         throw new Error("error occurred");
       }
     } catch (error) {
+      setbasicSubmitting((prev) => false);
       toast.error("error occurred while saving profile");
+    }
+  };
+
+  const handleCurrentWorkDetailsEdit = async () => {
+    try {
+      setWorkSubmitting((prev) => true);
+      const formData = new FormData();
+      formData.append(
+        "currentlyWorkingAs",
+        currentWorkDetails.currentlyWorkingAs
+      );
+      formData.append(
+        "currentlyWorkingAt",
+        currentWorkDetails.currentlyWorkingAt
+      );
+      formData.append(
+        "currentlyWorkingIn",
+        currentWorkDetails.currentlyWorkingIn
+      );
+      formData.append(
+        "currentExperience",
+        currentWorkDetails.currentExperience
+      );
+
+      const response = await axios.post(
+        "/api/alumni/profile/edit-current-work",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(response);
+
+      if (response.data.success) {
+        toast.success("Current Work details updated!");
+        setbasicSubmitting((prev) => false);
+        await refresh();
+        setOpen((prev) => false);
+      } else {
+        throw new Error("error occurred");
+      }
+    } catch (error) {
+      setbasicSubmitting((prev) => false);
+      toast.error("error occurred while saving current work");
     }
   };
 
@@ -453,9 +517,14 @@ function EditBasicProfileDetailsModal({ open, setOpen, refresh, data }) {
                     />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline">Cancel</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setOpen((prev) => false)}
+                    >
+                      Cancel
+                    </Button>
                     <Button onClick={handleBasicProfileDetailsEdit}>
-                      Save Changes
+                      {basicSubmitting ? "submitting.." : "Save Changes"}
                     </Button>
                   </div>
                 </div>
@@ -465,42 +534,61 @@ function EditBasicProfileDetailsModal({ open, setOpen, refresh, data }) {
                   <div className="space-y-2">
                     <Label htmlFor="profileHeadline">Role</Label>
                     <Input
-                      id="profileHeadline"
-                      name="profileHeadline"
-                      value={basicProfileDetails.profileHeadline || ""}
-                      // onChange={handleInputChange}
+                      value={currentWorkDetails.currentlyWorkingAs || ""}
+                      onChange={(e) => {
+                        setCurrentWorkDetails({
+                          ...currentWorkDetails,
+                          currentlyWorkingAs: e.target.value,
+                        });
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="profileHeadline">Company</Label>
                     <Input
-                      id="profileHeadline"
-                      name="profileHeadline"
-                      value={basicProfileDetails.profileHeadline || ""}
-                      // onChange={handleInputChange}
+                      value={currentWorkDetails.currentlyWorkingAt || ""}
+                      onChange={(e) => {
+                        setCurrentWorkDetails({
+                          ...currentWorkDetails,
+                          currentlyWorkingAt: e.target.value,
+                        });
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="profileHeadline">Location</Label>
                     <Input
-                      id="profileHeadline"
-                      name="profileHeadline"
                       value={basicProfileDetails.profileHeadline || ""}
-                      // onChange={handleInputChange}
+                      onChange={(e) => {
+                        setCurrentWorkDetails({
+                          ...currentWorkDetails,
+                          currentlyWorkingIn: e.target.value,
+                        });
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="profileHeadline">Experience</Label>
                     <Input
-                      id="profileHeadline"
-                      name="profileHeadline"
-                      value={basicProfileDetails.profileHeadline || ""}
-                      // onChange={handleInputChange}
+                      value={currentWorkDetails.currentExperience || ""}
+                      onChange={(e) => {
+                        setCurrentWorkDetails({
+                          ...currentWorkDetails,
+                          currentExperience: e.target.value,
+                        });
+                      }}
                     />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline">Cancel</Button>
-                    <Button>Save Changes</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setOpen((prev) => false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCurrentWorkDetailsEdit}>
+                      {workSubmitting ? "submitting .." : "Save Changes"}
+                    </Button>
                   </div>
                 </div>
               </TabsContent>
@@ -543,37 +631,6 @@ const mockJobs = {
   ],
 };
 
-const mockEvents = {
-  posted: [
-    {
-      id: "event1",
-      title: "Tech Meetup 2023",
-      date: "2023-12-15",
-      registrations: 45,
-    },
-    {
-      id: "event2",
-      title: "Coding Workshop",
-      date: "2023-11-20",
-      registrations: 30,
-    },
-  ],
-  registered: [
-    {
-      id: "event3",
-      title: "AI Conference",
-      date: "2023-12-10",
-      organizer: "AI Research Group",
-    },
-    {
-      id: "event4",
-      title: "Hackathon 2023",
-      date: "2023-11-25",
-      organizer: "TechHub",
-    },
-  ],
-};
-
 const mockConnections = [
   {
     id: "user1",
@@ -609,7 +666,11 @@ export default function ProfilePage() {
   const [pageLoad, setPageLoad] = useState(true);
   const [profile, setProfile] = useState();
 
-  const [basicProfileDetails, setBasicProfiledetails] = useState();
+  const [allSkills, setAllSkills] = useState([]);
+
+  const [profileSkills, setProfileSkills] = useState([]);
+  const [profileHobbies, setProfileHobbies] = useState([]);
+  const [profileLanguages, setprofileLanguages] = useState([]);
 
   const [isEditCoverImageModalOpen, setIsEditCoverImageModalOpen] =
     useState(false);
@@ -617,18 +678,72 @@ export default function ProfilePage() {
   const [isEditProfileImageModalOpen, setIsEditProfileImageModalOpen] =
     useState(false);
 
+  const handleEditSkillsHobbiesLanguages = async () => {
+    try {
+      console.log(profileSkills);
+      const formData = new FormData();
+
+      formData.append("skills", JSON.stringify(profileSkills || []));
+
+      formData.append("hobbies", JSON.stringify(profileHobbies || []));
+      formData.append(
+        "communicationLanguages",
+        JSON.stringify(profileLanguages || [])
+      );
+
+      const response = await axios.post(
+        "/api/alumni/profile/edit-skills-hobbies-languages",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (response.data.success) {
+        toast.success("Updated skills / hobbies / languages");
+        setSkillEditing(false);
+      }
+    } catch (error) {
+      toast.error("error while updating skills / hobbies / languages");
+    } finally {
+      setSkillEditing(false);
+      setHobbyLanguageEditing(false);
+      await refresh();
+    }
+  };
+
   const [
     isEditBasicProfileDetailsModalOpen,
     setIsEditBasicProfileDetailsModalOpen,
   ] = useState(false);
 
-  const [isEditCurrentWorkModalOpen, setIsEditCurrentWorkModalOpen] =
-    useState(false);
+  const [skillEditing, setSkillEditing] = useState(false);
+  const [hobbyLanguageEditing, setHobbyLanguageEditing] = useState(false);
+
+  const [skillPopoverOpen, setSkillPopoverOpen] = useState(false);
+  const [hobbyPopoverOpen, setHobbyPopoverOpen] = useState(false);
+  const [languagePopoverOpen, setLanguagePopoverOpen] = useState(false);
+
+  const [newLanguage, setNewLanguage] = useState("");
+  const [newHobby, setNewHobby] = useState("");
 
   const [isEditExperienceModalOpen, setIsEditExperienceModalOpen] =
     useState(false);
 
   const [formattedDate, setFormattedDate] = useState("");
+
+  useEffect(() => {
+    try {
+      axios.get("/api/get-skills").then((response) => {
+        if (response.data.success) {
+          setAllSkills((prev) => response.data.skillData);
+        }
+      });
+    } catch (error) {
+      console.log("error occurred ");
+    }
+  }, []);
 
   useEffect(() => {
     axios
@@ -637,7 +752,15 @@ export default function ProfilePage() {
         console.log(response);
         if (response.data.success) {
           setProfile((prev) => response.data.alumniProfileData);
-
+          setProfileSkills(
+            (prev) => response.data.alumniProfileData?.skills || []
+          );
+          setProfileHobbies(
+            (prev) => response.data.alumniProfileData?.hobbies || []
+          );
+          setprofileLanguages(
+            (prev) => response.data.alumniProfileData?.communicationLanguages
+          );
           setPageLoad((prev) => false);
         }
       })
@@ -645,6 +768,14 @@ export default function ProfilePage() {
         console.log("error occurred");
       });
   }, []);
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+  };
 
   useEffect(() => {
     if (profile?.dateOfBirth) {
@@ -948,21 +1079,138 @@ export default function ProfilePage() {
                           Your professional skills
                         </CardDescription>
                       </div>
+                      {!skillEditing && (
+                        <Button
+                          size="sm"
+                          variant={"outline"}
+                          onClick={() => setSkillEditing((prev) => true)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      )}
                     </CardHeader>
                     <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.skills && profile.skills.length > 0 ? (
-                          profile.skills.map((skill, index) => (
-                            <Badge key={index} variant="secondary">
-                              {skill}
-                            </Badge>
-                          ))
-                        ) : (
-                          <p className="text-muted-foreground">
-                            No skills listed
-                          </p>
-                        )}
-                      </div>
+                      {skillEditing ? (
+                        <motion.div
+                          variants={itemVariants}
+                          className="space-y-4"
+                        >
+                          <h3 className="text-lg font-semibold">
+                            Professional Skills
+                          </h3>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {profileSkills.map((skill, index) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="flex items-center gap-1 text-sm py-1.5"
+                              >
+                                {skill}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-4 w-4 p-0 ml-1"
+                                  onClick={() => {
+                                    const array = profileSkills.filter(
+                                      (_, i) => i !== index
+                                    );
+                                    setProfileSkills(array);
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </Badge>
+                            ))}
+                          </div>
+
+                          <Popover
+                            open={skillPopoverOpen}
+                            onOpenChange={setSkillPopoverOpen}
+                          >
+                            <PopoverTrigger className={""} asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={skillPopoverOpen}
+                                className="w-full max-w-72 justify-between"
+                              >
+                                {profileSkills.length == 0
+                                  ? "select skills"
+                                  : `${profileSkills.length} skills selected `}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full max-w-72 p-0">
+                              <Command>
+                                <CommandInput
+                                  placeholder="Search skill.."
+                                  className="h-9"
+                                />
+                                <CommandList className={"w-full max-w-72"}>
+                                  <CommandEmpty>No skills found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {allSkills.map((skill, index) => (
+                                      <CommandItem
+                                        key={index}
+                                        value={skill}
+                                        onSelect={(currentValue) => {
+                                          if (
+                                            !profileSkills.includes(
+                                              currentValue
+                                            )
+                                          ) {
+                                            console.log(currentValue);
+                                            let array = [...profileSkills];
+
+                                            array.push(currentValue);
+                                            setProfileSkills([...array]);
+                                          }
+                                        }}
+                                      >
+                                        {skill}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto",
+                                            profileSkills.includes(skill)
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => setSkillEditing((prev) => false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button onClick={handleEditSkillsHobbiesLanguages}>
+                              Save
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {profileSkills && profileSkills.length > 0 ? (
+                            profileSkills.map((skill, index) => (
+                              <Badge key={index} variant="secondary">
+                                {skill}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="text-muted-foreground">
+                              No skills listed
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -974,50 +1222,182 @@ export default function ProfilePage() {
                           Languages you speak and things you enjoy
                         </CardDescription>
                       </div>
+                      {!hobbyLanguageEditing && (
+                        <Button
+                          size="sm"
+                          variant={"outline"}
+                          onClick={() => {
+                            console.log("edit button clicker");
+                            setHobbyLanguageEditing((prev) => true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <Languages className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <p className="font-medium">Languages</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {profile.communicationLanguages &&
-                          profile.communicationLanguages.length > 0 ? (
-                            profile.communicationLanguages.map(
-                              (language, index) => (
-                                <Badge key={index} variant="outline">
-                                  {language}
-                                </Badge>
-                              )
-                            )
-                          ) : (
-                            <p className="text-muted-foreground">
-                              No languages listed
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      {!hobbyLanguageEditing ? (
+                        <>
+                          <div>
+                            <div className="flex items-center mb-2">
+                              <Languages className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <p className="font-medium">Languages</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {profileLanguages ? (
+                                profileLanguages.map((language, index) => (
+                                  <Badge key={index} variant="outline">
+                                    {language}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <p className="text-muted-foreground">
+                                  No languages listed
+                                </p>
+                              )}
+                            </div>
+                          </div>
 
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <Heart className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <p className="font-medium">Hobbies</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {profile.hobbies && profile.hobbies.length > 0 ? (
-                            profile.hobbies.map((hobby, index) => (
-                              <Badge key={index} variant="outline">
-                                {hobby}
-                              </Badge>
-                            ))
-                          ) : (
-                            <p className="text-muted-foreground">
-                              No hobbies listed
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                          <div>
+                            <div className="flex items-center mb-2">
+                              <Heart className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <p className="font-medium">Hobbies</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {profileHobbies && profileHobbies.length > 0 ? (
+                                profileHobbies.map((hobby, index) => (
+                                  <Badge key={index} variant="outline">
+                                    {hobby}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <p className="text-muted-foreground">
+                                  No hobbies listed
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <motion.div
+                            variants={itemVariants}
+                            className="space-y-4"
+                          >
+                            <h3 className="text-lg font-semibold">
+                              Communication Languages
+                            </h3>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {profileLanguages.map((language, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="flex items-center gap-1 text-sm py-1.5"
+                                >
+                                  {language}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0 ml-1"
+                                    onClick={() => {
+                                      const array = profileLanguages.filter(
+                                        (_, i) => i !== index
+                                      );
+                                      setprofileLanguages(array);
+                                    }}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                value={newLanguage}
+                                onChange={(e) => setNewLanguage(e.target.value)}
+                                placeholder="Add a language (e.g., English, Spanish)"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  let array = [...profileLanguages];
+                                  array.push(newLanguage);
+                                  setprofileLanguages((prev) => array);
+                                  setNewLanguage((prev) => "");
+                                }}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          </motion.div>
+                          <motion.div
+                            variants={itemVariants}
+                            className="space-y-4"
+                          >
+                            <h3 className="text-lg font-semibold">Hobbies</h3>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {profileHobbies.map((hobby, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="flex items-center gap-1 text-sm py-1.5"
+                                >
+                                  {hobby}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0 ml-1"
+                                    onClick={() => {
+                                      const array = profileHobbies.filter(
+                                        (_, i) => i !== index
+                                      );
+                                      setProfileHobbies(array);
+                                    }}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                value={newHobby}
+                                onChange={(e) => setNewHobby(e.target.value)}
+                                placeholder="Add your hobbies"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  let array = [...profileHobbies];
+                                  array.push(newHobby);
+                                  setProfileHobbies((prev) => array);
+                                  setNewHobby((prev) => "");
+                                }}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  setHobbyLanguageEditing((prev) => false)
+                                }
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                onClick={handleEditSkillsHobbiesLanguages}
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          </motion.div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -1174,7 +1554,7 @@ export default function ProfilePage() {
                                 )}
                               </div>
                               <div className="flex items-center text-sm text-muted-foreground mb-1">
-                                <Calendar className="h-4 w-4 mr-2" />
+                                <CalendarIcon className="h-4 w-4 mr-2" />
                                 {formatDate(exp.employmentStartDate)} -{" "}
                                 {exp.currentlyWorking
                                   ? "Present"
@@ -1254,7 +1634,7 @@ export default function ProfilePage() {
                                 {edu.educationInstitution}
                               </p>
                               <div className="flex items-center text-sm text-muted-foreground mb-1">
-                                <Calendar className="h-4 w-4 mr-2" />
+                                <CalendarIcon className="h-4 w-4 mr-2" />
                                 {edu.educationStartYear} -{" "}
                                 {edu.educationEndYear}
                               </div>
@@ -1352,7 +1732,7 @@ export default function ProfilePage() {
 
                               <div className="space-y-2 mb-3">
                                 <div className="flex items-center text-sm">
-                                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  <CalendarIcon className="h-4 w-4 mr-2 text-muted-foreground" />
                                   <span>
                                     Issued:{" "}
                                     {formatDate(cert.certificationIssueDate)}
@@ -1789,6 +2169,7 @@ export default function ProfilePage() {
             open={isEditBasicProfileDetailsModalOpen}
             setOpen={setIsEditBasicProfileDetailsModalOpen}
             refresh={refresh}
+            skills={allSkills}
           />
         </motion.div>
       )}

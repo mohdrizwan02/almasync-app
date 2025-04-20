@@ -59,7 +59,7 @@ export async function POST(request) {
     const updatedAlumniProfile = await alumniProfileModel.findOneAndUpdate(
       { alumni: userId },
       {
-        education,
+        experience,
         certifications,
         education,
       },

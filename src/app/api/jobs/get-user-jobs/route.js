@@ -112,8 +112,6 @@ export async function POST(request) {
     const data = await UserModel.aggregate(pipeline);
 
     console.log(data);
-    
-
   } catch (error) {
     console.log(error);
     return NextResponse.json(

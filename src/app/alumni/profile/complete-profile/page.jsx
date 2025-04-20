@@ -2173,7 +2173,7 @@ export default function ProfileUpdatePage() {
         formData.mentorshipExperience || ""
       );
 
-      formDataToSend.append("about", JSON.stringify(formData.about || []));
+      formDataToSend.append("about", JSON.stringify(formData.about || ""));
       formDataToSend.append("address", JSON.stringify(formData.address || {}));
       formDataToSend.append(
         "certifications",
