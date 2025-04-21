@@ -2,8 +2,9 @@ import dbConnect from "@/lib/dbConnect";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import alumniProfileModel from "@/models/alumniProfile.model";
+
 import { uploadOnCloudinary } from "@/helpers/uploadOnCloudinary";
+import StudentProfileModel from "@/models/studentProfile.model";
 
 dbConnect();
 
@@ -32,14 +33,14 @@ export async function POST(request) {
 
     const userId = decodedToken._id;
 
-    const alumniProfile = await alumniProfileModel.findOne({
-      alumni: userId,
+    const studentProfile = await StudentProfileModel.findOne({
+      student: userId,
     });
 
-    if (!alumniProfile) {
+    if (!studentProfile) {
       return NextResponse.json(
         {
-          message: "unauthorized request :: Alumni profile not found",
+          message: "unauthorized request :: Student profile not found",
           success: false,
         },
         {
@@ -68,11 +69,11 @@ export async function POST(request) {
         );
       }
     } else {
-      coverImageUrl = alumniProfile.coverImage || "";
+      coverImageUrl = studentProfile.coverImage || "";
     }
 
-    const updatedAlumniProfile = await alumniProfileModel.findOneAndUpdate(
-      { alumni: userId },
+    const updatedStudentProfile = await StudentProfileModel.findOneAndUpdate(
+      { student: userId },
       {
         coverImage: coverImageUrl,
       },
